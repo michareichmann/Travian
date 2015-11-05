@@ -30,14 +30,17 @@ class Travian(Keys):
     def run(self):
         pass
 
-    def open_troops(self):
+    def open_troops(self, num=0):
         self.goto_init()
         self.wait()
         self.press_tab(26)
-        self.press_enter()
+        if num:
+            self.press_ctrl_enter(num)
+        else:
+            self.press_enter()
 
     def goto_init(self):
-        self.m.click(65, 121)
+        self.m.click(1943, 125)
 
     def get_mouse_position(self):
         return self.m.position()
@@ -63,27 +66,56 @@ class Travian(Keys):
         self.press_enter()
 
     def send_raids(self):
-        self.open_troops()
-        self.wait(2)
-        # n_raids = len(self.coods['village 2']['x'])
-        n_raids = 1
+        n_raids = len(self.coods['village 2']['x'])
+        # open tabs
+        self.open_troops(n_raids)
+        self.wait(n_raids)
+        # fill in raid info
         for raids in range(n_raids):
-            n_tabs = self.coods['village 2']['unit_num'][raids]
-            self.press_tab(41 + n_tabs)
-            self.send_text(self.coods['village 2']['quantity'][raids])
-            self.press_tab(16 - n_tabs)
-            self.send_text(self.coods['village 2']['x'][raids])
-            self.press_tab()
-            self.send_text(self.coods['village 2']['y'][raids])
-            self.press_tab()
-            self.press_down(2)
-            self.press_tab()
-            self.press_enter()
-            self.wait(2)
+            # self.press_ctrl_tab()
+            # unit_num = self.coods['village 2']['unit_num'][raids]
+            # n_tabs = self.troop_tabs[1][unit_num]
+            # self.press_tab(41 + n_tabs)
+            # self.send_text(self.coods['village 2']['quantity'][raids])
+            # self.press_tab(16 - n_tabs)
+            # self.send_text(self.coods['village 2']['x'][raids])
+            # self.press_tab()
+            # self.send_text(self.coods['village 2']['y'][raids])
+            # self.press_tab()
+            # self.press_down(2)
+            # self.press_tab()
+            # self.press_enter()
+            self.send_raid(1, self.coods['village 2']['x'][raids], self.coods['village 2']['y'][raids], self.coods['village 2']['unit_num'][raids], self.coods['village 2']['quantity'][raids], False)
+            self.wait(0.3)
+        # confirm and close tabs
+        self.wait(.5 * n_raids)
+        for i in range(n_raids):
             self.press_tab(43)
             self.press_enter()
+            self.press_ctrl_w()
+            self.wait(0.3)
 
-
+    def send_raid(self, vil_num, x, y, unit_num, quantity, single=True):
+        if single:
+            self.open_troops()
+            self.wait(2)
+        else:
+            self.press_ctrl_tab()
+        n_tabs = self.troop_tabs[vil_num][unit_num]
+        self.press_tab(41 + n_tabs)
+        self.send_text(quantity)
+        self.press_tab(16 - n_tabs)
+        self.send_text(x)
+        self.press_tab()
+        self.send_text(y)
+        self.press_tab()
+        self.press_down(2)
+        self.press_tab()
+        self.press_enter()
+        if single:
+            self.wait(1)
+            self.press_tab(43)
+            self.press_enter()
 
 
     # def get_n_tabs(self, unit, village):
