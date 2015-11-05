@@ -25,3 +25,21 @@ class Keys:
         text = str(text)
         for letter in text:
             self.k.tap_key(letter)
+
+    def press_ctrl_enter(self, num=1):
+        for i in range(num):
+            self.k.press_key(self.k.control_key)
+            self.press_enter()
+            self.k.release_key(self.k.control_key)
+
+    def press_ctrl_tab(self, num=1):
+        for i in range(num):
+            self.k.press_key(self.k.control_key)
+            self.press_tab()
+            self.k.release_key(self.k.control_key)
+
+    def press_ctrl_w(self, num=1):
+        for i in range(num):
+            self.k.press_key(self.k.control_key)
+            self.k.tap_key('w')
+            self.k.release_key(self.k.control_key)
