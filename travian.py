@@ -5,17 +5,26 @@ __author__ = 'micha'
 # IMPORTS
 # ============================================
 from pymouse import PyMouse
-# from pykeyboard import PyKeyboard
 from time import sleep
 from keys import Keys
 from glob import glob
+from argparse import ArgumentParser
+
+
+
 
 
 class Travian(Keys):
 
     def __init__(self):
         Keys.__init__(self)
+        # parser
+        self.parser = ArgumentParser()
+        self.configure_parser()
+        self.args = self.parser.parse_args()
+        # mouse
         self.m = PyMouse()
+        # general stuff
         self.link_list = 5
         self.wait_time = 2
         self.n_troop_sorts = [15, 15, 3]
@@ -25,6 +34,7 @@ class Travian(Keys):
         self.coods = {}
         self.units = ['Clubswinger', 'Scout', 'Ram', 'Chief', 'Spearman', 'Paladin', 'Catapult', 'Settler', 'Axeman', 'Teutonic Knight']
         self.__get_coordinates()
+        self.hero = True if self.args.hero else False
 
 
     def run(self):
@@ -113,7 +123,8 @@ class Travian(Keys):
                 self.coods[village_name]['quantity'].append(data[3])
         print self.coods
 
-
+    def configure_parser(self):
+        self.parser.add_argument("-H", "--hero", action="store_true", help="True if hero is in village")
 
 
 
