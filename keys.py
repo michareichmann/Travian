@@ -43,3 +43,16 @@ class Keys:
             self.k.press_key(self.k.control_key)
             self.k.tap_key('w')
             self.k.release_key(self.k.control_key)
+
+    def press_shift_left(self, num=1):
+        for i in range(num):
+            self.k.press_key(self.k.shift_key)
+            self.k.tap_key(self.k.left_key)
+            self.k.release_key(self.k.shift_key)
+
+    def press_ctrl_and(self, letter, num=1):
+        assert type(letter) is str, 'The letter has to be a string'
+        for i in range(num):
+            self.k.press_key(self.k.control_key)
+            self.k.tap_key(letter)
+            self.k.release_key(self.k.control_key)

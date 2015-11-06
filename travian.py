@@ -9,15 +9,15 @@ from time import sleep
 from keys import Keys
 from glob import glob
 from argparse import ArgumentParser
-
-
-
+from Tkinter import Tk
 
 
 class Travian(Keys):
-
     def __init__(self):
         Keys.__init__(self)
+        # tkinter
+        self.root = Tk()
+        self.root.withdraw()
         # parser
         self.parser = ArgumentParser()
         self.configure_parser()
@@ -30,12 +30,14 @@ class Travian(Keys):
         self.n_troop_sorts = [15, 15, 3]
         self.n_villages = 3
         self.troop_tabs = []
-        self.fill_troop_tabs()
+        if self.args.troop_tabs:
+            self.get_troop_tabs()
+        # self.fill_troop_tabs()
         self.coods = {}
         self.units = ['Clubswinger', 'Scout', 'Ram', 'Chief', 'Spearman', 'Paladin', 'Catapult', 'Settler', 'Axeman', 'Teutonic Knight']
         self.__get_coordinates()
         self.hero = True if self.args.hero else False
-
+        self.hero_village = self.args.hero_village
 
     def run(self):
         pass
@@ -50,7 +52,7 @@ class Travian(Keys):
             self.press_enter()
 
     def goto_init(self):
-        self.m.click(1943, 125)
+        self.m.click(65, 125)
 
     def get_mouse_position(self):
         return self.m.position()
@@ -69,33 +71,35 @@ class Travian(Keys):
         self.press_tab(2)
         self.press_enter()
 
-    def change_village(self, num):
-        self.open_overview()
-        self.wait(self.wait_time)
-        self.press_tab(71 + num)
+    def open_map(self):
+        """
+        Showing Map of the current village
+        :return:
+        """
+        self.goto_init()
+        self.wait()
+        self.press_tab(4)
         self.press_enter()
 
-    def send_raids(self):
-        n_raids = len(self.coods['village 2']['x'])
+    def change_village(self, num):
+        self.open_map()
+        self.wait(self.wait_time)
+        self.press_tab(45 + num)
+        self.press_enter()
+
+    def send_raids(self, village=1):
+        # goto the village
+        assert len(str(village)) < 2, 'wrong village input'
+        vil_name = 'village ' + str(village)
+        self.change_village(village)
+        n_raids = len(self.coods[village]['x'])
         # open tabs
         self.open_troops(n_raids)
         self.wait(n_raids)
         # fill in raid info
         for raids in range(n_raids):
-            # self.press_ctrl_tab()
-            # unit_num = self.coods['village 2']['unit_num'][raids]
-            # n_tabs = self.troop_tabs[1][unit_num]
-            # self.press_tab(41 + n_tabs)
-            # self.send_text(self.coods['village 2']['quantity'][raids])
-            # self.press_tab(16 - n_tabs)
-            # self.send_text(self.coods['village 2']['x'][raids])
-            # self.press_tab()
-            # self.send_text(self.coods['village 2']['y'][raids])
-            # self.press_tab()
-            # self.press_down(2)
-            # self.press_tab()
-            # self.press_enter()
-            self.send_raid(1, self.coods['village 2']['x'][raids], self.coods['village 2']['y'][raids], self.coods['village 2']['unit_num'][raids], self.coods['village 2']['quantity'][raids], False)
+            self.send_raid(1, self.coods[vil_name]['x'][raids], self.coods[vil_name]['y'][raids], self.coods[vil_name]['unit_num'][raids],
+                           self.coods[vil_name]['quantity'][raids], False)
             self.wait(0.3)
         # confirm and close tabs
         self.wait(.5 * n_raids)
@@ -128,14 +132,6 @@ class Travian(Keys):
             self.press_enter()
 
 
-    # def get_n_tabs(self, unit, village):
-
-
-    def fill_troop_tabs(self):
-        self.troop_tabs = [x for x in self.n_troop_sorts]
-        self.troop_tabs[1] = [0, 2, 4, 5, 6, 8, 10, 11, 12, 13]
-
-
     def __get_coordinates(self):
         for name in glob('*.inf'):
             f = open(name, 'r')
@@ -157,12 +153,34 @@ class Travian(Keys):
 
     def configure_parser(self):
         self.parser.add_argument("-H", "--hero", action="store_true", help="True if hero is in village")
+        self.parser.add_argument("hero_village", nargs='?', default="2", help="enter the hero village", type=int)
+        self.parser.add_argument("-tt", "--troop_tabs", action="store_true", help="read troop tabs from travian")
 
-
-
-
+    def get_troop_tabs(self):
+        self.goto_init()
+        for j in range(self.n_villages):
+            self.change_village(j + 1)
+            self.wait(2)
+            self.open_troops()
+            self.wait(2)
+            tabs = [0]
+            self.wait()
+            self.press_tab(41)
+            for i in range(1, 22):
+                self.press_tab()
+                self.send_text(str(i))
+                self.press_shift_left(2)
+                self.press_ctrl_and('c')
+                self.wait()
+                num = self.root.clipboard_get()
+                if num == str(i):
+                    tabs.append(i)
+                if len(tabs) >= 10:
+                    break
+            self.troop_tabs.append(tabs)
+            print j, tabs
 
 
 if __name__ == '__main__':
-    x = Travian()
+    t = Travian()
     # x.run()
