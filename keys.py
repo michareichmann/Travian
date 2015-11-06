@@ -5,6 +5,10 @@ __author__ = 'micha'
 # ============================================
 from pykeyboard import PyKeyboard
 
+
+# ============================================
+# CLASS DEFINITION
+# ============================================
 class Keys:
 
     def __init__(self):
@@ -20,6 +24,9 @@ class Keys:
     def press_down(self, num=1):
         for i in range(num):
             self.k.tap_key(self.k.down_key)
+
+    def press_esc(self):
+        self.k.tap_key(self.k.escape_key)
 
     def send_text(self, text):
         text = str(text)
@@ -50,9 +57,22 @@ class Keys:
             self.k.tap_key(self.k.left_key)
             self.k.release_key(self.k.shift_key)
 
+    def press_shift_tab(self, num=1):
+        for i in range(num):
+            self.k.press_key(self.k.shift_key)
+            self.k.tap_key(self.k.tab_key)
+            self.k.release_key(self.k.shift_key)
+
+    def press_alt_tab(self, num=1):
+        for i in range(num):
+            self.k.press_key(self.k.alt_key)
+            self.press_tab()
+            self.k.release_key(self.k.alt_key)
+
     def press_ctrl_and(self, letter, num=1):
         assert type(letter) is str, 'The letter has to be a string'
         for i in range(num):
             self.k.press_key(self.k.control_key)
             self.k.tap_key(letter)
             self.k.release_key(self.k.control_key)
+
