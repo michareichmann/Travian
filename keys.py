@@ -13,6 +13,7 @@ class Keys:
 
     def __init__(self):
         self.k = PyKeyboard()
+        self.suppress_xlib_output(2)
 
     def press_tab(self, num=1):
         for i in range(num):
@@ -76,3 +77,8 @@ class Keys:
             self.k.tap_key(letter)
             self.k.release_key(self.k.control_key)
 
+    @staticmethod
+    def suppress_xlib_output(num):
+        for i in range(num):
+            print '\r\033[1A' + 46 * ' ',
+        print '\r'
