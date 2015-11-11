@@ -37,11 +37,12 @@ class Travian(Keys, Mouse):
         # village
         self.villages = self.acquire_village_names()
         self.n_villages = len(self.villages)
-        self.get_troop_tabs()
         self.print_village_overview()
         # raids
         self.units = {0: 'Clubswinger', 1: 'Scout', 2: 'Ram', 3: 'Chief', 4: 'Spearman', 5: 'Paladin', 6: 'Catapult', 7: 'Settler', 8: 'Axeman', 9: 'Teutonic Knight'}
         self.raid_info = self.get_raid_info()
+        self.get_troop_tabs()
+        # go back to the terminal
         self.press_alt_tab()
 
     def run(self):
@@ -102,6 +103,7 @@ class Travian(Keys, Mouse):
         assert len(str(village)) < 2, 'wrong village input'
         # get infos
         infos = self.raid_info.values()[village - 1]
+        # troops = self.villages.values()[village - 1]['troops']
         n_raids = len(infos['x'])
         if n_raids == 0:
             print 'no raids in infofile for', self.raid_info.keys()[village - 1]
@@ -109,20 +111,60 @@ class Travian(Keys, Mouse):
         print 'send raids for', self.raid_info.keys()[village - 1]
         # goto the village
         self.change_village(village)
-        # open tabs
-        self.open_troops(n_raids)
-        self.wait(n_raids)
+        # open tabs and check how many raids are possible
+        send_raids = []
+        left_raids = self.check_raids(village, send_raids)
+        self.open_troops(left_raids)
+        self.wait(left_raids)
         # fill in raid info
-        for raids in range(n_raids - 1, -1, -1):
-            self.send_raid(village, infos['x'][raids], infos['y'][raids], infos['unit'][raids], infos['quantity'][raids], False)
+        # for raid in range(n_raids - 1, -1, -1):
+        for raid in reversed(send_raids):
+            # if troops[infos['unit_num'][raid]] < infos['quantity'][n_raids - raid]:
+            #     print 'There are not enough troops for all the raids in', self.villages.keys()[village - 1]
+            #     left_raids = raid
+            #     break
+            # troops[infos['unit_num'][raid]] -= infos['quantity'][n_raids - raid]
+            self.send_raid(village, infos['x'][raid], infos['y'][raid], infos['unit'][raid], infos['quantity'][raid], False)
             self.wait(0.5)
         # confirm and close tabs
         self.wait(.5 * n_raids)
-        for i in range(n_raids):
-            self.press_tab(43)
-            self.press_enter()
-            self.press_ctrl_w()
-            self.wait(self.a)
+        # for i in range(left_raids):
+        #     self.press_tab(43)
+        #     self.press_enter()
+        #     self.press_ctrl_w()
+        #     self.wait(self.a)
+
+    def check_raids(self, village, send_raids=None):
+        village -= 1
+        infos = self.raid_info.values()[village]
+        troops = self.villages.values()[village]['troops']
+        left_raids = 0
+        all_raids = len(infos['x'])
+        send_raids = [] if send_raids is None else send_raids
+        sent_troops = [0 * x for x in range(10)]
+        for raid in range(all_raids):
+            if self.__check_raid(raid, sent_troops, infos, troops):
+                left_raids += 1
+                send_raids.append(raid)
+            # unit_num = infos['unit_num'][raid]
+            # print raid, infos['unit'][raid], troops[unit_num], sum(infos['quantity'][0:raid]), infos['quantity'][raid]
+            # if not troops[unit_num] - sent_troops[unit_num] < infos['quantity'][raid]:
+            #     sent_troops[unit_num] += infos['quantity'][raid]
+            #     left_raids += 1
+            # print 'sent troops:', sent_troops
+        print send_raids
+        return left_raids
+
+    @staticmethod
+    def __check_raid(raid, sent_troops, infos, troops):
+        unit_num = infos['unit_num'][raid]
+        print raid, infos['unit'][raid], troops[unit_num], sent_troops[unit_num], infos['quantity'][raid]
+        if not troops[unit_num] - sent_troops[unit_num] < infos['quantity'][raid]:
+            sent_troops[unit_num] += infos['quantity'][raid]
+            print 'sent troops:', sent_troops
+            return True
+        else:
+            return False
 
     def send_raid(self, vil_num, x, y, unit_name, quantity, single=True):
         """
@@ -146,9 +188,7 @@ class Travian(Keys, Mouse):
                 break
         n_tabs = self.villages.values()[vil_num - 1]['troop tabs'][unit_num]
         all_tabs = self.villages.values()[vil_num - 1]['troop tabs'][-1] + 1
-        print self.villages.keys()[vil_num - 1], n_tabs, all_tabs,
         all_tabs += 2 if self.villages.values()[vil_num - 1]['hero'] else 0
-        print all_tabs
         self.press_tab(41 + n_tabs)
         self.send_text(quantity)
         self.press_tab(all_tabs - n_tabs)
@@ -178,18 +218,21 @@ class Travian(Keys, Mouse):
             dic[village_name]['unit'] = []
             dic[village_name]['unit_num'] = []
             dic[village_name]['quantity'] = []
+            # dic[village_name]['troops'] = [0 * x for x in range(10)]
             for line in f:
                 if line.startswith('#'):
                     continue
-                data = [int(x) if x[1:].isdigit() else x for x in line.split()]
+                data = [int(x) if x[-1].isdigit() else x for x in line.split()]
                 dic[village_name]['x'].append(data[0])
                 dic[village_name]['y'].append(data[1])
                 for i, unit in self.units.iteritems():
                     if unit.lower().startswith(data[2]):
                         dic[village_name]['unit'].append(unit)
                         dic[village_name]['unit_num'].append(i)
+                        # dic[village_name]['troops'][i] += data[3]
                         break
                 dic[village_name]['quantity'].append(data[3])
+
         return dic
 
     # todo: read in troop numbers and check if you got enough to raid
@@ -243,10 +286,14 @@ class Travian(Keys, Mouse):
     def get_troop_tabs(self):
         self.open_troops()
         for k in range(self.n_villages):
+            # skip this if there is no raid to send
+            if len(self.raid_info.values()[k]['x']) == 0:
+                continue
             tabs = []
             tab = 0
             self.change_village(k + 1)
             all_str = self.get_copy_all_str()
+            self.villages.values()[k]['troops'] = []
             for i, val1 in enumerate(all_str):
                 if val1.startswith('Farm List'):
                     for j, val2 in enumerate(all_str[i + 1:]):
@@ -259,6 +306,7 @@ class Travian(Keys, Mouse):
                                 tabs.append(tab)
                             try:
                                 num = int(all_str[i + 1:][j + 1].strip(' /'))
+                                self.villages.values()[k]['troops'].append(num)
                                 tab = tabs[-1] + 2 if num else tabs[-1] + 1
                             except (IndexError, ValueError):
                                 pass
@@ -276,9 +324,22 @@ class Travian(Keys, Mouse):
 
     def print_raid_info(self):
         for key, item in self.raid_info.iteritems():
-            print key + ':', '\n'
+            print key + ':'
             for key1, item1 in item.iteritems():
                 print '  {key}:{tabs}{info}'.format(key=key1, info=item1, tabs='\t' * (2 - len(key1 + '  :') / 8))
+            print
+
+    def print_troops(self):
+        for key, item in self.villages.iteritems():
+            print key + ':'
+            if 'troops' not in item.keys():
+                print '  not checked'
+                continue
+            for i, num in enumerate(item['troops']):
+                unit = 'Teutons' if self.units[i].startswith('Teut') else self.units[i]
+                if num:
+                    print '  {unit}:{tabs}{num}'.format(unit=unit, num=num, tabs='\t' * (2 - len(unit + '  :') / 8))
+            print
 
     @staticmethod
     def wait(sec=0.1):
