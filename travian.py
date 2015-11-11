@@ -41,7 +41,7 @@ class Travian(Keys, Mouse):
         # raids
         self.units = {0: 'Clubswinger', 1: 'Scout', 2: 'Ram', 3: 'Chief', 4: 'Spearman', 5: 'Paladin', 6: 'Catapult', 7: 'Settler', 8: 'Axeman', 9: 'Teutonic Knight'}
         self.raid_info = self.get_raid_info()
-        self.get_troop_tabs()
+        # self.get_troop_tabs()
         # go back to the terminal
         self.press_alt_tab()
 
@@ -79,6 +79,19 @@ class Travian(Keys, Mouse):
         self.wait()
         self.press_tab(2)
         self.press_enter()
+
+    def open_stats(self):
+        """
+        Maneuver to Village Statistics in Travian
+        """
+        self.goto_init()
+        self.wait()
+        self.press_shift_tab(9 + self.n_villages)
+        self.press_enter()
+        self.wait(self.wait_time)
+        self.press_shift_tab(16 + 2 * self.n_villages)
+        self.press_enter()
+        self.wait(1)
 
     def change_village(self, num):
         """
