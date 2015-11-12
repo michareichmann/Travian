@@ -10,8 +10,6 @@ from mouse import Mouse
 from glob import glob
 from argparse import ArgumentParser
 from Tkinter import Tk
-# import pickle
-# import os.path
 from collections import OrderedDict
 import re
 
@@ -39,9 +37,8 @@ class Travian(Keys, Mouse):
         self.n_villages = len(self.villages)
         self.print_village_overview()
         # raids
-        self.units = {0: 'Clubswinger', 1: 'Scout', 2: 'Ram', 3: 'Chief', 4: 'Spearman', 5: 'Paladin', 6: 'Catapult', 7: 'Settler', 8: 'Axeman', 9: 'Teutonic Knight'}
+        self.units = {0: 'Clubswinger', 1: 'Scout', 2: 'Ram', 3: 'Chief', 4: 'Spearman', 5: 'Paladin', 6: 'Catapult', 7: 'Settler', 8: 'Axeman', 9: 'Teutonic Knight', 10: 'Hero'}
         self.raid_info = self.get_raid_info()
-        # self.get_troop_tabs()
         # go back to the terminal
         self.press_alt_tab()
 
@@ -93,6 +90,13 @@ class Travian(Keys, Mouse):
         self.press_enter()
         self.wait(1)
 
+    def open_market(self):
+        self.goto_init()
+        self.wait()
+        self.press_shift_tab(12 + self.n_villages)
+        self.press_enter()
+        self.wait(self.wait_time)
+
     def change_village(self, num):
         """
         Change Village
@@ -109,6 +113,7 @@ class Travian(Keys, Mouse):
     # ============================================
     # RAIDING
     def send_all_raids(self):
+        self.get_troop_tabs()
         for vil in range(1, self.n_villages + 1):
             self.send_raids(vil)
 
@@ -128,24 +133,19 @@ class Travian(Keys, Mouse):
         send_raids = []
         left_raids = self.check_raids(village, send_raids)
         self.open_troops(left_raids)
-        self.wait(left_raids)
+        self.wait(left_raids * 0.6)
         # fill in raid info
-        # for raid in range(n_raids - 1, -1, -1):
         for raid in reversed(send_raids):
-            # if troops[infos['unit_num'][raid]] < infos['quantity'][n_raids - raid]:
-            #     print 'There are not enough troops for all the raids in', self.villages.keys()[village - 1]
-            #     left_raids = raid
-            #     break
-            # troops[infos['unit_num'][raid]] -= infos['quantity'][n_raids - raid]
             self.send_raid(village, infos['x'][raid], infos['y'][raid], infos['unit'][raid], infos['quantity'][raid], False)
             self.wait(0.5)
         # confirm and close tabs
-        self.wait(.5 * n_raids)
-        # for i in range(left_raids):
-        #     self.press_tab(43)
-        #     self.press_enter()
-        #     self.press_ctrl_w()
-        #     self.wait(self.a)
+        self.wait(.4 * n_raids)
+        for i in range(left_raids):
+            self.press_tab(43)
+            self.press_enter()
+            self.wait(self.a)
+            self.press_ctrl_w()
+            self.wait()
 
     def check_raids(self, village, send_raids=None):
         village -= 1
@@ -159,12 +159,7 @@ class Travian(Keys, Mouse):
             if self.__check_raid(raid, sent_troops, infos, troops):
                 left_raids += 1
                 send_raids.append(raid)
-            # unit_num = infos['unit_num'][raid]
-            # print raid, infos['unit'][raid], troops[unit_num], sum(infos['quantity'][0:raid]), infos['quantity'][raid]
-            # if not troops[unit_num] - sent_troops[unit_num] < infos['quantity'][raid]:
-            #     sent_troops[unit_num] += infos['quantity'][raid]
-            #     left_raids += 1
-            # print 'sent troops:', sent_troops
+        print 'sent troops:', sent_troops
         print send_raids
         return left_raids
 
@@ -174,7 +169,6 @@ class Travian(Keys, Mouse):
         print raid, infos['unit'][raid], troops[unit_num], sent_troops[unit_num], infos['quantity'][raid]
         if not troops[unit_num] - sent_troops[unit_num] < infos['quantity'][raid]:
             sent_troops[unit_num] += infos['quantity'][raid]
-            print 'sent troops:', sent_troops
             return True
         else:
             return False
@@ -209,7 +203,9 @@ class Travian(Keys, Mouse):
         self.press_tab()
         self.send_text(y)
         self.press_tab()
-        self.press_down(2)
+        # 1 for an attack
+        # self.press_down(2)
+        self.press_down(1)
         self.press_tab()
         self.press_enter()
         if single:
@@ -248,19 +244,40 @@ class Travian(Keys, Mouse):
 
         return dic
 
-    # todo: read in troop numbers and check if you got enough to raid
+    # ============================================
+    # MARKETPLACE
+    def send_merchant(self, vil1, vil2, lum, clay, iron, crop, go_twice=False):
+        vil2 -= 1
+        for i, arg in enumerate(sorted(locals().values())):
+            if i > 1:
+                assert type(arg) is int, '{arg} has to be of type int'.format(arg=arg)
+        self.change_village(vil1)
+        self.open_market()
+        self.send_text(lum)
+        self.wait()
+        self.press_tab()
+        self.send_text(clay)
+        self.wait()
+        self.press_tab()
+        self.send_text(iron)
+        self.wait()
+        self.press_tab()
+        self.send_text(crop)
+        self.wait()
+        self.press_tab()
+        self.send_text(self.villages.keys()[vil2])
+        self.wait()
+        if go_twice:
+            self.press_tab()
+            self.press_space()
+            self.wait()
+        self.press_enter()
+        self.wait(1)
+        self.press_tab(55)
+        self.press_enter()
 
-    # def __fill_troop_tabs(self):
-    #     file_name = 'villages.dct'
-    #     if self.args.troop_tabs:
-    #         self.get_troop_tabs()
-    #         f = open(file_name, 'w')
-    #         pickle.dump(self.villages, f)
-    #     else:
-    #         assert os.path.exists(file_name), file_name + ' does not exist!'
-    #         f = open(file_name, 'r')
-    #         self.villages = pickle.load(f)
-
+    # ============================================
+    # VILLAGE INFOS
     def acquire_village_names(self):
         dic = OrderedDict()
         all_str = self.get_copy_all_str()
@@ -283,18 +300,6 @@ class Travian(Keys, Mouse):
                         dic[val2]['y'] = int(coods.strip('()').split('|')[1])
                         dic[val2]['hero'] = False
         return dic
-
-    def get_copy_all_str(self):
-        self.goto_init()
-        self.wait()
-        self.press_ctrl_and('a')
-        self.press_ctrl_and('c')
-        self.wait()
-        self.goto_init()
-        self.wait()
-        self.goto_init()
-        # return self.root.clipboard_get().encode('utf-8').split('\n')
-        return re.split('[\n\t]', self.root.clipboard_get().encode('utf-8'))
 
     def get_troop_tabs(self):
         self.open_troops()
@@ -326,11 +331,23 @@ class Travian(Keys, Mouse):
             key = self.villages.keys()[k]
             self.villages[key]['troop tabs'] = tabs
 
-    def configure_parser(self):
-        self.parser.add_argument("-H", "--hero", action="store_true", help="True if hero is in village")
-        self.parser.add_argument("hero_village", nargs='?', default="2", help="enter the hero village", type=int)
-        self.parser.add_argument("-tt", "--troop_tabs", action="store_true", help="acquire troop tabs from travian")
+    def acquire_troops_in_villages(self):
+        self.open_stats()
+        all_str = self.get_copy_all_str()
+        vil = 0
+        for i, val1 in enumerate(all_str):
+                if val1.startswith('Troops in villages'):
+                    for j, val2 in enumerate(all_str[i + 1:]):
+                        troops = [0] * 11
+                        if val2.startswith('Troops'):
+                            for k, val3 in zip(range(11), all_str[j + i + 2:]):
+                                troops[self.sort_troop_index(k)] = int(val3)
+                            key = self.villages.keys()[vil]
+                            self.villages[key]['troops'] = troops
+                            vil += 1
 
+    # ============================================
+    # PRINT OVERVIEWS
     def print_village_overview(self):
         for key, item in self.villages.iteritems():
             print '{key}:{tabs}({x}|{y}){hero}'.format(key=key, x=item['x'], y=item['y'], tabs='\t' * (2 - len(key + ':') / 8), hero='  <--Here is your Hero' if item['hero'] else '')
@@ -354,10 +371,36 @@ class Travian(Keys, Mouse):
                     print '  {unit}:{tabs}{num}'.format(unit=unit, num=num, tabs='\t' * (2 - len(unit + '  :') / 8))
             print
 
+    # ============================================
+    # MISCELLANEOUS
+    def get_copy_all_str(self):
+        self.goto_init()
+        self.wait()
+        self.press_ctrl_and('a')
+        self.press_ctrl_and('c')
+        self.wait()
+        self.goto_init()
+        self.wait()
+        self.goto_init()
+        # return self.root.clipboard_get().encode('utf-8').split('\n')
+        return re.split('[\n\t]', self.root.clipboard_get().encode('utf-8'))
+
     @staticmethod
     def wait(sec=0.1):
         sleep(sec)
 
+    @staticmethod
+    def sort_troop_index(ind):
+        """
+        Sort troop list from troop window to stat window
+        :param ind: troop number
+        """
+        return ind % 3 * 4 + ind / 3
+
+    def configure_parser(self):
+        self.parser.add_argument("-H", "--hero", action="store_true", help="True if hero is in village")
+        self.parser.add_argument("hero_village", nargs='?', default="2", help="enter the hero village", type=int)
+        self.parser.add_argument("-tt", "--troop_tabs", action="store_true", help="acquire troop tabs from travian")
 
 if __name__ == '__main__':
     t = Travian()

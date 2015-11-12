@@ -77,6 +77,10 @@ class Keys:
             self.k.tap_key(letter)
             self.k.release_key(self.k.control_key)
 
+    def press_space(self):
+        self.k.tap_key(' ')
+
+
     @staticmethod
     def suppress_xlib_output(num):
         for i in range(num):
