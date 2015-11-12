@@ -14,6 +14,9 @@ from collections import OrderedDict
 import re
 
 
+# todo: GUI
+# todo: Alarmchecker
+
 # ============================================
 # MAIN CLASS DEFINITION
 # ============================================
@@ -113,14 +116,18 @@ class Travian(Keys, Mouse):
     # ============================================
     # RAIDING
     def send_all_raids(self):
-        self.get_troop_tabs()
+        self.get_all_troop_tabs()
         for vil in range(1, self.n_villages + 1):
-            self.send_raids(vil)
+            self.send_raids(vil, False)
 
-    def send_raids(self, village=1):
+    def send_raids(self, village=1, single=True):
         assert len(str(village)) < 2, 'wrong village input'
+        vil_name = self.villages.keys()[village - 1]
+        # get troop tabs
+        if single:
+            self.get_troop_tabs(vil_name)
         # get infos
-        infos = self.raid_info.values()[village - 1]
+        infos = self.raid_info[vil_name]
         # troops = self.villages.values()[village - 1]['troops']
         n_raids = len(infos['x'])
         if n_raids == 0:
@@ -300,35 +307,40 @@ class Travian(Keys, Mouse):
                         dic[val2]['hero'] = False
         return dic
 
-    def get_troop_tabs(self):
+    def get_all_troop_tabs(self, skip_empty=True):
         self.open_troops()
-        for k in range(self.n_villages):
+        for village in self.villages:
             # skip this if there is no raid to send
-            if len(self.raid_info.values()[k]['x']) == 0:
+            if skip_empty and len(self.raid_info[village]['x']) == 0:
                 continue
-            tabs = []
-            tab = 0
-            self.change_village(k + 1)
-            all_str = self.get_copy_all_str()
-            self.villages.values()[k]['troops'] = []
-            for i, val1 in enumerate(all_str):
-                if val1.startswith('Farm List'):
-                    for j, val2 in enumerate(all_str[i + 1:]):
-                        if val2.startswith('Village'):
-                            break
-                        elif val2.startswith('Hero'):
-                            self.villages.values()[k]['hero'] = True
-                        if j % 2 == 0:
-                            if len(tabs) <= 10:
-                                tabs.append(tab)
-                            try:
-                                num = int(all_str[i + 1:][j + 1].strip(' /'))
-                                self.villages.values()[k]['troops'].append(num)
-                                tab = tabs[-1] + 2 if num else tabs[-1] + 1
-                            except (IndexError, ValueError):
-                                pass
-            key = self.villages.keys()[k]
-            self.villages[key]['troop tabs'] = tabs
+            self.get_troop_tabs(village, False)
+
+    def get_troop_tabs(self, vil, single=True):
+        if single:
+            self.open_troops()
+        vil_num = self.villages.keys().index(vil) + 1
+        tabs = []
+        tab = 0
+        self.change_village(vil_num)
+        all_str = self.get_copy_all_str()
+        self.villages[vil]['troops'] = []
+        for i, val1 in enumerate(all_str):
+            if val1.startswith('Farm List'):
+                for j, val2 in enumerate(all_str[i + 1:]):
+                    if val2.startswith('Village'):
+                        break
+                    elif val2.startswith('Hero'):
+                        self.villages[vil]['hero'] = True
+                    if j % 2 == 0:
+                        if len(tabs) <= 10:
+                            tabs.append(tab)
+                        try:
+                            num = int(all_str[i + 1:][j + 1].strip(' /'))
+                            self.villages[vil]['troops'].append(num)
+                            tab += 2 if num else 1
+                        except (IndexError, ValueError):
+                            pass
+        self.villages[vil]['troop tabs'] = tabs
 
     def acquire_troops_in_villages(self):
         self.open_stats()
@@ -369,6 +381,13 @@ class Travian(Keys, Mouse):
                 if num:
                     print '  {unit}:{tabs}{num}'.format(unit=unit, num=num, tabs='\t' * (2 - len(unit + '  :') / 8))
             print
+
+    def print_tabs(self):
+        for key, item in self.villages.iteritems():
+            try:
+                print '{key}:{tabs}{lst}'.format(key=key, tabs='\t' * (2 - len(key + ':') / 8), lst=item['troop tabs'])
+            except KeyError:
+                print '{key}:{tabs}not yet checked'.format(key=key, tabs='\t' * (2 - len(key + ':') / 8))
 
     # ============================================
     # MISCELLANEOUS
