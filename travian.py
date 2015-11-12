@@ -204,8 +204,7 @@ class Travian(Keys, Mouse):
         self.send_text(y)
         self.press_tab()
         # 1 for an attack
-        # self.press_down(2)
-        self.press_down(1)
+        self.press_down(2)
         self.press_tab()
         self.press_enter()
         if single:
