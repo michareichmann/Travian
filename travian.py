@@ -33,7 +33,7 @@ class Travian(Keys, Mouse):
         self.args = self.parser.parse_args()
         # general stuff
         self.link_list = 5
-        self.wait_time = 2
+        self.wait_time = 3
         self.a = 0.1
         # village
         self.villages = self.acquire_village_names()
@@ -252,7 +252,7 @@ class Travian(Keys, Mouse):
 
     # ============================================
     # MARKETPLACE
-    def send_merchant(self, vil1, vil2, lum, clay, iron, crop, go_twice=False):
+    def send_merchant(self, vil1, vil2, lum=0, clay=0, iron=0, crop=0, go_twice=False):
         vil2 -= 1
         for i, arg in enumerate(sorted(locals().values())):
             if i > 1:
@@ -281,6 +281,18 @@ class Travian(Keys, Mouse):
         self.wait(1)
         self.press_tab(55)
         self.press_enter()
+        
+    def send_iron(self, vil1, vil2, iron, go_twice=False):
+        self.send_merchant(vil1, vil2, iron=iron, go_twice=go_twice)
+    
+    def send_clay(self, vil1, vil2, clay, go_twice=False):
+        self.send_merchant(vil1, vil2, clay=clay, go_twice=go_twice)
+        
+    def send_lumber(self, vil1, vil2, lumber, go_twice=False):
+        self.send_merchant(vil1, vil2, lum=lumber, go_twice=go_twice)
+        
+    def send_crop(self, vil1, vil2, crop, go_twice=False):
+        self.send_merchant(vil1, vil2, crop=crop, go_twice=go_twice)
 
     # ============================================
     # VILLAGE INFOS
