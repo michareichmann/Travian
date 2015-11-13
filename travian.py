@@ -90,9 +90,9 @@ class Travian(Keys, Mouse):
         self.press_shift_tab(9 + self.n_villages)
         self.press_enter()
         self.wait(self.wait_time)
-        self.press_shift_tab(16 + 2 * self.n_villages)
-        self.press_enter()
-        self.wait(1)
+        # self.press_shift_tab(16 + 2 * self.n_villages)
+        # self.press_enter()
+        # self.wait(1)
 
     def open_market(self, single=False):
         pos = self.get_mouse_position()
@@ -389,6 +389,30 @@ class Travian(Keys, Mouse):
                             self.villages[key]['troops'] = troops
                             vil += 1
 
+    def attack_alarm(self):
+        self.open_stats()
+        all_str = self.get_copy_all_str()
+        found_vil = 0
+        for i, val1 in enumerate(all_str):
+            if found_vil == self.n_villages:
+                break
+            vil = self.villages.keys()[found_vil]
+            next_vil = self.villages.keys()[found_vil + 1] if found_vil < self.n_villages - 1 else 'xyz'
+            if val1.startswith(vil):
+                print found_vil, vil + ': '
+                found_vil += 1
+                for k, val2 in enumerate(all_str[i + 1:]):
+                    if val2.startswith(next_vil) or val2.startswith('Loyalty'):
+                        break
+                    print val2
+
+    def add_stat_info(self):
+        for key, value in self.villages.iteritems():
+            value['attacks out'] = 0
+            value['attacks in'] = 0
+            value['reinf in'] = 0
+            value['reinf out'] = 0
+            value['merchants'] = 0
     # endregion
 
     # ============================================
