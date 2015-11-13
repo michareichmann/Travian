@@ -21,12 +21,12 @@ import re
 # MAIN CLASS DEFINITION
 # ============================================
 class Travian(Keys, Mouse):
-    def __init__(self):
+    def __init__(self, gui):
         Keys.__init__(self)
         Mouse.__init__(self)
         # tkinter
-        self.root = Tk()
-        self.root.withdraw()
+        self.root = gui
+        # self.root.withdraw()
         # parser
         self.parser = ArgumentParser()
         self.configure_parser()
@@ -93,25 +93,34 @@ class Travian(Keys, Mouse):
         self.press_enter()
         self.wait(1)
 
-    def open_market(self):
+    def open_market(self, single=False):
+        pos = self.get_mouse_position()
         self.goto_init()
         self.wait()
         self.press_shift_tab(12 + self.n_villages)
         self.press_enter()
-        self.wait(self.wait_time)
+        self.single_mode(single, pos)
 
-    def change_village(self, num):
+    def change_village(self, num, single=False):
         """
         Change Village
         :param num: number of the village
         :return: village name
         """
+        pos = self.get_mouse_position()
         self.goto_init()
         self.wait()
         self.press_shift_tab(9 + self.n_villages - num)
         self.press_enter()
-        self.wait(1)
+        self.single_mode(single, pos)
         return self.villages.keys()[num - 1]
+
+    def single_mode(self, status, pos):
+        if not status:
+            self.wait()
+        else:
+            self.press_alt_tab()
+            self.m.move(pos[0], pos[1])
 
     # ============================================
     # RAIDING
@@ -433,5 +442,7 @@ class Travian(Keys, Mouse):
         self.parser.add_argument("-tt", "--troop_tabs", action="store_true", help="acquire troop tabs from travian")
 
 if __name__ == '__main__':
-    t = Travian()
+    root = Tk()
+    root.withdraw()
+    t = Travian(root)
     # x.run()
