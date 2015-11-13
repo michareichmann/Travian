@@ -50,6 +50,7 @@ class Travian(Keys, Mouse):
 
     # ============================================
     # OPEN WINDOWS IN TRAVIAN
+    # region open windows
     def open_troops(self, num=0):
         self.goto_init()
         self.wait()
@@ -121,9 +122,12 @@ class Travian(Keys, Mouse):
         else:
             self.press_alt_tab()
             self.m.move(pos[0], pos[1])
+    # endregion
 
     # ============================================
     # RAIDING
+    # region raiding
+
     def send_all_raids(self):
         self.get_all_troop_tabs()
         for vil in range(1, self.n_villages + 1):
@@ -258,9 +262,12 @@ class Travian(Keys, Mouse):
                 dic[village_name]['quantity'].append(data[3])
 
         return dic
+    # endregion
 
     # ============================================
     # MARKETPLACE
+    # region market
+
     def send_merchant(self, vil1, vil2, lum=0, clay=0, iron=0, crop=0, go_twice=False):
         vil2 -= 1
         for i, arg in enumerate(sorted(locals().values())):
@@ -303,8 +310,12 @@ class Travian(Keys, Mouse):
     def send_crop(self, vil1, vil2, crop, go_twice=False):
         self.send_merchant(vil1, vil2, crop=crop, go_twice=go_twice)
 
+    # endregion
+
     # ============================================
     # VILLAGE INFOS
+    # region village infos
+
     def acquire_village_names(self):
         dic = OrderedDict()
         all_str = self.get_copy_all_str()
@@ -378,8 +389,12 @@ class Travian(Keys, Mouse):
                             self.villages[key]['troops'] = troops
                             vil += 1
 
+    # endregion
+
     # ============================================
     # PRINT OVERVIEWS
+    # region overviews
+
     def print_village_overview(self):
         for key, item in self.villages.iteritems():
             print '{key}:{tabs}({x}|{y}){hero}'.format(key=key, x=item['x'], y=item['y'], tabs='\t' * (2 - len(key + ':') / 8), hero='  <--Here is your Hero' if item['hero'] else '')
@@ -410,8 +425,12 @@ class Travian(Keys, Mouse):
             except KeyError:
                 print '{key}:{tabs}not yet checked'.format(key=key, tabs='\t' * (2 - len(key + ':') / 8))
 
+    # endregion
+
     # ============================================
     # MISCELLANEOUS
+    # region miscellaneous
+
     def get_copy_all_str(self):
         self.goto_init()
         self.wait()
@@ -423,6 +442,13 @@ class Travian(Keys, Mouse):
         self.goto_init()
         # return self.root.clipboard_get().encode('utf-8').split('\n')
         return re.split('[\n\t]', self.root.clipboard_get().encode('utf-8'))
+
+    def configure_parser(self):
+        self.parser.add_argument("-H", "--hero", action="store_true", help="True if hero is in village")
+        self.parser.add_argument("hero_village", nargs='?', default="2", help="enter the hero village", type=int)
+        self.parser.add_argument("-tt", "--troop_tabs", action="store_true", help="acquire troop tabs from travian")
+
+    # endregion
 
     @staticmethod
     def wait(sec=0.1):
@@ -436,10 +462,6 @@ class Travian(Keys, Mouse):
         """
         return ind % 3 * 4 + ind / 3
 
-    def configure_parser(self):
-        self.parser.add_argument("-H", "--hero", action="store_true", help="True if hero is in village")
-        self.parser.add_argument("hero_village", nargs='?', default="2", help="enter the hero village", type=int)
-        self.parser.add_argument("-tt", "--troop_tabs", action="store_true", help="acquire troop tabs from travian")
 
 if __name__ == '__main__':
     root = Tk()
