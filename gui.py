@@ -7,7 +7,7 @@ __author__ = 'micha'
 from Tkinter import *
 from collections import OrderedDict
 from travian import Travian
-
+from os import system
 
 # ============================================
 # CONSTANTS
@@ -29,12 +29,14 @@ class Gui:
         self.main_frame = Frame(self.root)
         self.market_frame = Frame(self.root)
         self.raid_frame = Frame(self.root)
+        self.info_frame = Frame(self.root, relief=SUNKEN)
         # gui items
         # pics
         self.pics = self.create_pics()
         # labels
         self.market_labels = self.create_market_labels()
         self.raid_labels = self.create_raid_labels()
+        self.info_labels = self.create_info_labels()
         # spin boxes
         self.spin_boxes = self.create_spin_boxes()
         # option menus
@@ -43,14 +45,34 @@ class Gui:
         # buttons
         self.market_buttons = self.create_market_buttons()
         self.raid_buttons = self.create_raid_buttons()
+        self.buttons = self.create_buttons()
+        # variables
+        self.info_vars = self.create_info_vars()
+        # bools
+        self.gather_attack_info = False
         # configure gui
         self.config_root()
         self.make_market_frame()
         self.make_raid_frame()
+        self.make_info_frame()
 
     # ============================================
     # OBJECT CREATION
     # region object creation
+    def create_buttons(self):
+        dic = OrderedDict()
+        dic['restart'] = Button(self.info_frame, text='Restart', width=button_size, command=self.restart)
+        return dic
+
+    def create_info_vars(self):
+        dic = OrderedDict()
+        dic['attacks'] = OrderedDict()
+        for key, vil in self.travian.villages.iteritems():
+            dic['attacks'][key] = StringVar()
+        return dic
+
+
+
     def create_option_vars(self):
         dic = OrderedDict()
         dic['vil1'] = StringVar()
@@ -96,8 +118,19 @@ class Gui:
         dic['main'] = Label(self.raid_frame, text='Raid Manager', font='font/Font 16 bold')
         return dic
 
+    def create_info_labels(self):
+        dic = OrderedDict()
+        dic['main'] = Label(self.info_frame, text='Info Frame', font='font/Font 16 bold')
+        for key in self.travian.villages:
+            dic['key'] = tuple([Label(self.info_frame, text=key), Label(self.info_frame, textvar=self.info_vars['attacks'][key])])
+
+
+        return dic
+
     # endregion
 
+    # ============================================
+    # COMMANDS
     def open_market(self):
         self.travian.open_market(True)
 
@@ -121,7 +154,11 @@ class Gui:
 
     def config_root(self):
         self.root.title('Travian Helper')
-        self.root.geometry('530x250+600-80')
+        self.root.geometry('530x400+600-80')
+
+    def restart(self):
+        self.root.destroy()
+        system('/home/micha/documents/python/Travian/gui.py')
 
     # def count(self):
     #     if self.do_count:
@@ -157,7 +194,7 @@ class Gui:
         return dic
 
     def make_market_frame(self):
-        self.market_frame.pack(side=LEFT)
+        self.market_frame.grid()
         # spinboxes
         self.market_labels['main'].grid(columnspan=3, pady=10)
         for key in self.pics:
@@ -176,9 +213,14 @@ class Gui:
         self.market_buttons['quit'].grid(row=7, column=2)
 
     def make_raid_frame(self):
-        self.raid_frame.pack(side=RIGHT)
+        self.raid_frame.grid(row=0, column=1, sticky=N)
         self.raid_labels['main'].pack(padx=20, pady=10)
         self.raid_buttons['all raids'].pack()
+
+    def make_info_frame(self):
+        self.info_frame.grid(row=1, columnspan=2)
+        self.info_labels['main'].grid(columnspan=3)
+        self.buttons['restart'].grid(row=1)
 
     # def update_message(self):
     #     old = self.var.get()
