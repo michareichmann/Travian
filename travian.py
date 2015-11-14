@@ -16,6 +16,8 @@ import re
 
 # todo: GUI
 # todo: Alarmchecker
+# todo: check if merchants are enough
+# todo: read in len of Link list
 
 # ============================================
 # MAIN CLASS DEFINITION
@@ -33,11 +35,12 @@ class Travian(Keys, Mouse):
         self.args = self.parser.parse_args()
         # general stuff
         self.link_list = 5
-        self.wait_time = 3
+        self.wait_time = 1.5
         self.a = 0.1
         # village
         self.villages = self.acquire_village_names()
         self.n_villages = len(self.villages)
+        self.add_stat_info()
         self.print_village_overview()
         # raids
         self.units = {0: 'Clubswinger', 1: 'Scout', 2: 'Ram', 3: 'Chief', 4: 'Spearman', 5: 'Paladin', 6: 'Catapult', 7: 'Settler', 8: 'Axeman', 9: 'Teutonic Knight', 10: 'Hero'}
@@ -105,9 +108,10 @@ class Travian(Keys, Mouse):
     def change_village(self, num, single=False):
         """
         Change Village
-        :param num: number of the village
+        :param num: name of the village
         :return: village name
         """
+        # num = self.villages.keys().index(vil) + 1
         pos = self.get_mouse_position()
         self.goto_init()
         self.wait()
@@ -118,7 +122,7 @@ class Travian(Keys, Mouse):
 
     def single_mode(self, status, pos):
         if not status:
-            self.wait()
+            self.wait(self.wait_time)
         else:
             self.press_alt_tab()
             self.m.move(pos[0], pos[1])
@@ -269,10 +273,10 @@ class Travian(Keys, Mouse):
     # region market
 
     def send_merchant(self, vil1, vil2, lum=0, clay=0, iron=0, crop=0, go_twice=False):
-        vil2 -= 1
-        for i, arg in enumerate(sorted(locals().values())):
-            if i > 1:
-                assert type(arg) is int, '{arg} has to be of type int'.format(arg=arg)
+        vil1 = self.villages.keys().index(vil1) + 1
+        # for i, arg in enumerate(sorted(locals().values())):
+        #     if i > 1:
+        #         assert type(arg) is int, '{arg} has to be of type int'.format(arg=arg)
         self.change_village(vil1)
         self.open_market()
         self.send_text(lum)
@@ -287,7 +291,7 @@ class Travian(Keys, Mouse):
         self.send_text(crop)
         self.wait()
         self.press_tab()
-        self.send_text(self.villages.keys()[vil2])
+        self.send_text(vil2)
         self.wait()
         if go_twice:
             self.press_tab()
@@ -389,22 +393,42 @@ class Travian(Keys, Mouse):
                             self.villages[key]['troops'] = troops
                             vil += 1
 
-    def attack_alarm(self):
+    def acquire_stat_info(self):
         self.open_stats()
         all_str = self.get_copy_all_str()
         found_vil = 0
         for i, val1 in enumerate(all_str):
             if found_vil == self.n_villages:
                 break
-            vil = self.villages.keys()[found_vil]
+            vil_name = self.villages.keys()[found_vil]
+            vil = self.villages.values()[found_vil]
             next_vil = self.villages.keys()[found_vil + 1] if found_vil < self.n_villages - 1 else 'xyz'
-            if val1.startswith(vil):
-                print found_vil, vil + ': '
+            if val1.startswith(vil_name):
                 found_vil += 1
                 for k, val2 in enumerate(all_str[i + 1:]):
                     if val2.startswith(next_vil) or val2.startswith('Loyalty'):
                         break
-                    print val2
+                    info = val2.split()
+                    for j, word in enumerate(info):
+                        if word.startswith('Own'):
+                            num = int(info[j - 1].strip('x'))
+                            if info[j + 1].startswith('reinf'):
+                                vil['reinf out'] = num
+                            elif info[j + 1].startswith('attack'):
+                                vil['attacks out'] = num
+                        elif word.startswith('Arriving'):
+                            if info[j + 1].startswith('attack'):
+                                num = int(info[j - 1].strip('x'))
+                                vil['attacks in'] = num
+                            elif info[j + 1].startswith('reinf'):
+                                num = int(info[j - 1].strip('x'))
+                                vil['reinf in'] = num
+                        elif word.startswith('Troops'):
+                            num = int(info[j - 1].strip('x'))
+                            vil['oasis attacks'] = num
+                        elif '/' in word:
+                            num = word.split('/')[0]
+                            vil['merchants'] = num
 
     def add_stat_info(self):
         for key, value in self.villages.iteritems():
@@ -413,6 +437,7 @@ class Travian(Keys, Mouse):
             value['reinf in'] = 0
             value['reinf out'] = 0
             value['merchants'] = 0
+            value['oasis attacks'] = 0
     # endregion
 
     # ============================================
@@ -421,13 +446,13 @@ class Travian(Keys, Mouse):
 
     def print_village_overview(self):
         for key, item in self.villages.iteritems():
-            print '{key}:{tabs}({x}|{y}){hero}'.format(key=key, x=item['x'], y=item['y'], tabs='\t' * (2 - len(key + ':') / 8), hero='  <--Here is your Hero' if item['hero'] else '')
+            print '{key}:{tabs}({x}|{y}){hero}'.format(key=key, x=item['x'], y=item['y'], tabs=self.get_tabs(key + ':'), hero='  <--Here is your Hero' if item['hero'] else '')
 
     def print_raid_info(self):
         for key, item in self.raid_info.iteritems():
             print key + ':'
             for key1, item1 in item.iteritems():
-                print '  {key}:{tabs}{info}'.format(key=key1, info=item1, tabs='\t' * (2 - len(key1 + '  :') / 8))
+                print '  {key}:{tabs}{info}'.format(key=key1, info=item1, tabs=self.get_tabs(key1 + '  :'))
             print
 
     def print_troops(self):
@@ -439,15 +464,23 @@ class Travian(Keys, Mouse):
             for i, num in enumerate(item['troops']):
                 unit = 'Teutons' if self.units[i].startswith('Teut') else self.units[i]
                 if num:
-                    print '  {unit}:{tabs}{num}'.format(unit=unit, num=num, tabs='\t' * (2 - len(unit + '  :') / 8))
+                    print '  {unit}:{tabs}{num}'.format(unit=unit, num=num, tabs=self.get_tabs(unit + '  :'))
             print
 
     def print_tabs(self):
         for key, item in self.villages.iteritems():
             try:
-                print '{key}:{tabs}{lst}'.format(key=key, tabs='\t' * (2 - len(key + ':') / 8), lst=item['troop tabs'])
+                print '{key}:{tabs}{lst}'.format(key=key, tabs=self.get_tabs(key + ':'), lst=item['troop tabs'])
             except KeyError:
-                print '{key}:{tabs}not yet checked'.format(key=key, tabs='\t' * (2 - len(key + ':') / 8))
+                print '{key}:{tabs}not yet checked'.format(key=key, tabs=self.get_tabs(key + ':'))
+
+    def print_stat_info(self):
+        strings = ['attacks out', 'attacks in', 'reinf in', 'reinf out', 'merchants']
+        for key, village in self.villages.iteritems():
+            print key + ':'
+            for string in strings:
+                if village[string]:
+                    print '  {str}:{tabs}{val}'.format(str=string, tabs=self.get_tabs(string + ':  '), val=village[string])
 
     # endregion
 
@@ -486,6 +519,9 @@ class Travian(Keys, Mouse):
         """
         return ind % 3 * 4 + ind / 3
 
+    @staticmethod
+    def get_tabs(string):
+        return '\t' * (2 - len(string) / 8)
 
 if __name__ == '__main__':
     root = Tk()
