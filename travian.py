@@ -16,6 +16,7 @@ import re
 
 # todo: check if merchants are enough
 # todo: use len of link list
+# todo: make fct read all_str and acquire names subfunction
 
 # ============================================
 # MAIN CLASS DEFINITION
