@@ -41,7 +41,7 @@ class Travian(Keys, Mouse):
         self.villages = self.acquire_village_names()
         self.n_villages = len(self.villages)
         self.add_stat_info()
-        self.print_village_overview()
+        # self.print_village_overview()
         # raids
         self.units = {0: 'Clubswinger', 1: 'Scout', 2: 'Ram', 3: 'Chief', 4: 'Spearman', 5: 'Paladin', 6: 'Catapult', 7: 'Settler', 8: 'Axeman', 9: 'Teutonic Knight', 10: 'Hero'}
         self.raid_info = self.get_raid_info()
@@ -151,11 +151,13 @@ class Travian(Keys, Mouse):
             print 'no raids in infofile for', self.raid_info.keys()[village - 1]
             return
         print 'send raids for', self.raid_info.keys()[village - 1]
-        # goto the village
-        self.change_village(village)
         # open tabs and check how many raids are possible
         send_raids = []
         left_raids = self.check_raids(village, send_raids)
+        # goto the village
+        if len(send_raids) > 0:
+            self.change_village(village)
+        # open tabs and wait
         self.open_troops(left_raids)
         self.wait(left_raids * 0.6)
         # fill in raid info
@@ -410,6 +412,7 @@ class Travian(Keys, Mouse):
                         break
                     info = val2.split()
                     for j, word in enumerate(info):
+                        old_word = info[j - 1] if j > 0 else None
                         if word.startswith('Own'):
                             num = int(info[j - 1].strip('x'))
                             if info[j + 1].startswith('reinf'):
@@ -423,7 +426,7 @@ class Travian(Keys, Mouse):
                             elif info[j + 1].startswith('reinf'):
                                 num = int(info[j - 1].strip('x'))
                                 vil['reinf in'] = num
-                        elif word.startswith('Troops'):
+                        elif word.startswith('Troops') and not old_word.startswith('attacking'):
                             num = int(info[j - 1].strip('x'))
                             vil['oasis attacks'] = num
                         elif '/' in word:
