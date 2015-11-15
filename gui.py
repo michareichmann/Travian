@@ -9,7 +9,7 @@ from collections import OrderedDict
 from travian import Travian
 from os import execl
 from sys import executable, argv
-from mail import Mail
+# from mail import Mail
 
 # ============================================
 # CONSTANTS
@@ -20,9 +20,9 @@ button_size = 12
 # ============================================
 # CLASS DEFINITION
 # ============================================
-class Gui(Mail):
+class Gui:
     def __init__(self):
-        Mail.__init__(self)
+        # Mail.__init__(self)
         self.pics_path = 'pics/'
         # gui
         self.root = Tk()
@@ -207,16 +207,22 @@ class Gui(Mail):
         python = executable
         execl(python, python, *argv)
 
-    def start_update_attacks(self):
-        self.gather_attack_info = True
-        self.info_vars['status'].set('ON')
-        self.info_labels['status'].configure(fg='red')
-        self.info_buttons['on'].configure(text='OFF')
+    def switch_attack_status(self):
+        if self.gather_attack_info:
+            self.gather_attack_info = False
+            self.info_vars['status'].set('OFF')
+            self.info_labels['status'].configure(fg='black')
+            self.info_buttons['status'].configure(text='ON')
+        else:
+            self.gather_attack_info = True
+            self.info_vars['status'].set('ON')
+            self.info_labels['status'].configure(fg='red')
+            self.info_buttons['status'].configure(text='OFF')
 
-    def stop_update_attacks(self):
-        self.gather_attack_info = False
-        self.info_vars['status'].set('OFF')
-        self.info_labels['status'].configure(fg='black')
+    # def stop_update_attacks(self):
+    #     self.gather_attack_info = False
+    #     self.info_vars['status'].set('OFF')
+    #     self.info_labels['status'].configure(fg='black')
 
     def update_attacks(self):
         update_time = int(self.info_spin_boxes['update time'].get()) * 1000
@@ -231,6 +237,7 @@ class Gui(Mail):
                     lab.configure(fg='black')
                 var.set(info['attacks in'])
                 # print var.get()
+            self.travian.press_alt_tab()
             self.info_labels['attacks'].values()[0][0].after(update_time, self.update_attacks)
         else:
             self.dummy.after(update_time, self.update_attacks)
@@ -261,7 +268,6 @@ class Gui(Mail):
     # def start_count(self):
     #     self.do_count = True
     #  endregion
-
 
     # ============================================
     # FRAMES AND PACKING

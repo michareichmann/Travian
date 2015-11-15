@@ -9,6 +9,7 @@ from getpass import getpass
 from email.mime.text import MIMEText
 from sys import exit
 
+
 # ============================================
 # CLASS DEFINITION
 # ============================================
@@ -38,11 +39,15 @@ class Mail:
     def close_connection(self):
         self.server.quit()
 
-    def send_email(self, num=1, to=None, msg=None):
+    def send_email(self, num=1, to=None, msg=None, subj=None):
         if to is None:
             to = self.email
         if msg is None:
             msg = self.message.as_string()
+        if subj is not None:
+            msg = MIMEText('')
+            msg['Subject'] = subj
+            msg = msg.as_string()
         for i in range(num):
             self.server.sendmail(self.email, to, msg)
 
@@ -53,6 +58,13 @@ class Mail:
         msg['To'] = self.email
         self.message = msg
 
+    @staticmethod
+    def reverse_text(text):
+        rev = ''
+        for letter in reversed(text):
+            rev += letter
+        return rev
+
 if __name__ == '__main__':
     t = Mail()
-    t.send_email()
+    # t.send_email()

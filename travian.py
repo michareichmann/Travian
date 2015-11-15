@@ -14,10 +14,8 @@ from collections import OrderedDict
 import re
 
 
-# todo: GUI
-# todo: Alarmchecker
 # todo: check if merchants are enough
-# todo: read in len of Link list
+# todo: use len of link list
 
 # ============================================
 # MAIN CLASS DEFINITION
@@ -34,7 +32,7 @@ class Travian(Keys, Mouse):
         self.configure_parser()
         self.args = self.parser.parse_args()
         # general stuff
-        self.link_list = 5
+        self.__link_list = 0
         self.wait_time = 1.5
         self.a = 0.1
         # village
@@ -126,6 +124,7 @@ class Travian(Keys, Mouse):
         else:
             self.press_alt_tab()
             self.m.move(pos[0], pos[1])
+
     # endregion
 
     # ============================================
@@ -268,6 +267,7 @@ class Travian(Keys, Mouse):
                 dic[village_name]['quantity'].append(data[3])
 
         return dic
+
     # endregion
 
     # ============================================
@@ -303,16 +303,16 @@ class Travian(Keys, Mouse):
         self.wait(1)
         self.press_tab(55)
         self.press_enter()
-        
+
     def send_iron(self, vil1, vil2, iron, go_twice=False):
         self.send_merchant(vil1, vil2, iron=iron, go_twice=go_twice)
-    
+
     def send_clay(self, vil1, vil2, clay, go_twice=False):
         self.send_merchant(vil1, vil2, clay=clay, go_twice=go_twice)
-        
+
     def send_lumber(self, vil1, vil2, lumber, go_twice=False):
         self.send_merchant(vil1, vil2, lum=lumber, go_twice=go_twice)
-        
+
     def send_crop(self, vil1, vil2, crop, go_twice=False):
         self.send_merchant(vil1, vil2, crop=crop, go_twice=go_twice)
 
@@ -327,6 +327,7 @@ class Travian(Keys, Mouse):
         all_str = self.get_copy_all_str()
         all_str = filter(lambda x: len(x) > 2, all_str)
         for i, val1 in enumerate(all_str):
+            self.acquire_link_list(all_str, i, val1)
             if val1.startswith('Villages'):
                 for j, val2 in enumerate(all_str[i + 1:]):
                     if val2.startswith('Daily'):
@@ -344,6 +345,16 @@ class Travian(Keys, Mouse):
                         dic[val2]['y'] = int(coods.strip('()').split('|')[1])
                         dic[val2]['hero'] = False
         return dic
+
+    def acquire_link_list(self, lis, index, value):
+        if value.startswith('Link list'):
+            count = 0
+            for val in lis[index + 1:]:
+                if val.startswith('Warehouse'):
+                    break
+                count += 1
+            self.__link_list = count
+            return count
 
     def get_all_troop_tabs(self, skip_empty=True):
         self.open_troops()
@@ -385,15 +396,15 @@ class Travian(Keys, Mouse):
         all_str = self.get_copy_all_str()
         vil = 0
         for i, val1 in enumerate(all_str):
-                if val1.startswith('Troops in villages'):
-                    for j, val2 in enumerate(all_str[i + 1:]):
-                        troops = [0] * 11
-                        if val2.startswith('Troops'):
-                            for k, val3 in zip(range(11), all_str[j + i + 2:]):
-                                troops[self.sort_troop_index(k)] = int(val3)
-                            key = self.villages.keys()[vil]
-                            self.villages[key]['troops'] = troops
-                            vil += 1
+            if val1.startswith('Troops in villages'):
+                for j, val2 in enumerate(all_str[i + 1:]):
+                    troops = [0] * 11
+                    if val2.startswith('Troops'):
+                        for k, val3 in zip(range(11), all_str[j + i + 2:]):
+                            troops[self.sort_troop_index(k)] = int(val3)
+                        key = self.villages.keys()[vil]
+                        self.villages[key]['troops'] = troops
+                        vil += 1
 
     def acquire_stat_info(self):
         self.open_stats()
@@ -441,6 +452,7 @@ class Travian(Keys, Mouse):
             value['reinf out'] = 0
             value['merchants'] = 0
             value['oasis attacks'] = 0
+
     # endregion
 
     # ============================================
@@ -510,6 +522,16 @@ class Travian(Keys, Mouse):
 
     # endregion
 
+    # ============================================
+    # SET
+    def set_link_list(self, value):
+        self.__link_list = value
+
+    # ============================================
+    # GET
+    def get_link_list(self):
+        return self.__link_list
+
     @staticmethod
     def wait(sec=0.1):
         sleep(sec)
@@ -525,6 +547,7 @@ class Travian(Keys, Mouse):
     @staticmethod
     def get_tabs(string):
         return '\t' * (2 - len(string) / 8)
+
 
 if __name__ == '__main__':
     root = Tk()
