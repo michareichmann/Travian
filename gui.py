@@ -22,12 +22,13 @@ button_size = 12
 # ============================================
 class Gui:
     def __init__(self):
-        # Mail.__init__(self)
+
         self.pics_path = 'pics/'
         # gui
         self.root = Tk()
-        # travian class
+        # compositions
         self.travian = Travian(self.root)
+        # self.mail = Mail()
         # frames
         self.main_frame = Frame(self.root)
         self.market_frame = Frame(self.root, bd=5, relief=GROOVE)
@@ -44,7 +45,7 @@ class Gui:
         self.info_labels = self.create_info_labels()
         self.dummy = Label()
         # spin boxes
-        self.spin_boxes = self.create_spin_boxes()
+        self.spin_boxes = self.create_market_spin_boxes()
         self.info_spin_boxes = self.create_info_spinboxes()
         # option menus
         self.option_vars = self.create_option_vars()
@@ -81,6 +82,7 @@ class Gui:
         dic['merchant'] = Button(self.market_frame, text='Send Merchant', width=button_size, command=self.send_merchant)
         dic['change_vil'] = Button(self.market_frame, text='Change Village', width=button_size, command=self.change_village)
         dic['clear'] = Button(self.market_frame, text='Clear', width=15, command=self.clear)
+        dic['offer'] = Button(self.market_frame, text='Make Offer', width=10, command=self.make_offer)
         return dic
 
     def create_raid_buttons(self):
@@ -110,6 +112,10 @@ class Gui:
         dic['vil2'] = StringVar()
         dic['vil1'].set(self.travian.villages.keys()[0])
         dic['vil2'].set(self.travian.villages.keys()[1])
+        dic['res1'] = StringVar()
+        dic['res2'] = StringVar()
+        dic['res1'].set('Lumber')
+        dic['res2'].set('Clay')
         return dic
 
     def create_opt_menus(self):
@@ -118,6 +124,11 @@ class Gui:
         dic_opt['vil2'] = OptionMenu(self.market_frame, self.option_vars['vil2'], *self.travian.villages.keys())
         dic_opt['vil1'].configure(width=8)
         dic_opt['vil2'].configure(width=8)
+        ress = [x[0].upper() + x[1:] for x in self.pics.keys()]
+        dic_opt['res1'] = OptionMenu(self.market_frame, self.option_vars['res1'], *ress)
+        dic_opt['res2'] = OptionMenu(self.market_frame, self.option_vars['res2'], *ress)
+        dic_opt['res1'].configure(width=6, font='font/Font 8')
+        dic_opt['res2'].configure(width=6, font='font/Font 8')
         return dic_opt
 
     def create_market_labels(self):
@@ -162,15 +173,19 @@ class Gui:
             # dic[key].grid(row=num)
         return dic
 
-    def create_spin_boxes(self):
+    def create_market_spin_boxes(self):
         dic = OrderedDict()
+        dic['pics'] = OrderedDict()
         for key in self.pics:
-            dic[key] = Spinbox(self.market_frame, width=10, justify=CENTER, from_=0, to=50000, increment=1000)
+            dic['pics'][key] = Spinbox(self.market_frame, width=10, justify=CENTER, from_=0, to=50000, increment=1000)
+        dic['res1'] = Spinbox(self.market_frame, width=10, justify=CENTER, from_=1000, to=10000, increment=1000)
+        dic['res2'] = Spinbox(self.market_frame, width=10, justify=CENTER, from_=1000, to=10000, increment=1000)
+        dic['offer count'] = Spinbox(self.market_frame, width=3, justify=CENTER, from_=1, to=20, increment=1)
         return dic
 
     def create_info_spinboxes(self):
         dic = OrderedDict()
-        dic['update time'] = Spinbox(self.info_frame, width=3, justify=CENTER, from_=10, to=100, increment=10)
+        dic['update time'] = Spinbox(self.info_frame, width=3, justify=CENTER, from_=5, to=100, increment=5)
         return dic
     # endregion
 
@@ -218,6 +233,15 @@ class Gui:
             self.info_vars['status'].set('ON')
             self.info_labels['status'].configure(fg='red')
             self.info_buttons['status'].configure(text='OFF')
+
+    def make_offer(self):
+        vil = self.option_vars['vil1'].get()
+        res1 = self.option_vars['res1'].get()
+        res2 = self.option_vars['res2'].get()
+        quant1 = self.spin_boxes['res1'].get()
+        quant2 = self.spin_boxes['res2'].get()
+        num = int(self.spin_boxes['offer count'].get())
+        self.travian.market_offer(vil, res1, res2, quant1, quant2, num)
 
     # def stop_update_attacks(self):
     #     self.gather_attack_info = False
@@ -271,6 +295,8 @@ class Gui:
 
     # ============================================
     # FRAMES AND PACKING
+    # region packing
+
     def make_market_frame(self):
         self.market_frame.grid()
         # spinboxes
@@ -278,16 +304,23 @@ class Gui:
         for key in self.pics:
             num = self.pics.keys().index(key)
             self.market_labels['ress labels'][key].grid(row=num + 1)
-            self.spin_boxes[key].grid(row=num + 1, column=1)
+            self.spin_boxes['pics'][key].grid(row=num + 1, column=1)
         self.market_buttons['clear'].grid(row=5, columnspan=2)
         self.market_labels['vil1'].grid(row=6, pady=10, sticky=S)
         self.market_labels['vil2'].grid(row=7)
+        self.spin_boxes['res1'].grid(row=1, column=4)
+        self.spin_boxes['res2'].grid(row=2, column=4)
+        self.spin_boxes['offer count'].grid(row=3, column=2)
+        # option menus
         self.opt_menus['vil1'].grid(row=6, column=1)
         self.opt_menus['vil2'].grid(row=7, column=1)
+        self.opt_menus['res1'].grid(row=1, column=2, columnspan=2)
+        self.opt_menus['res2'].grid(row=2, column=2, columnspan=2)
         # buttons
-        self.market_buttons['market'].grid(row=1, column=2, rowspan=2, padx=15)
-        self.market_buttons['merchant'].grid(row=3, column=2, rowspan=2)
-        self.market_buttons['change_vil'].grid(row=5, column=2)
+        self.market_buttons['offer'].grid(row=3, column=3, columnspan=2)
+        self.market_buttons['market'].grid(row=5, column=2, columnspan=3, padx=15)
+        self.market_buttons['merchant'].grid(row=6, column=2, columnspan=3)
+        self.market_buttons['change_vil'].grid(row=7, column=2, columnspan=3)
         self.market_labels['bot'].grid(row=8)
 
     def make_raid_frame(self):
@@ -317,17 +350,11 @@ class Gui:
         self.info_spin_boxes['update time'].grid(row=1, column=4, pady=8, sticky=W)
         self.info_labels['status'].grid(row=1, column=5, pady=4, sticky=E)
 
-        # def update_message(self):
-        #     old = self.var.get()
-        #     new = ''
-        #     for value in self.ress_entries.values():
-        #         # print item
-        #         new += value.get() + '\n'
-        #     if old != new:
-        #         self.var.set(new)
-        #         self.msg.after(10, self.update_message)
-        #     else:
-        #         self.dummy.after(10, self.update_message)
+    # endregion
+
+    def do_nothing(self):
+        pass
+
 
 if __name__ == '__main__':
     t = Gui()

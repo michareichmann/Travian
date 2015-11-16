@@ -39,7 +39,8 @@ class Travian(Keys, Mouse):
         self.wait_time = 1.5
         self.a = 0.1
         # village
-        self.villages = self.acquire_village_names()
+        self.villages = None
+        self.read_all_str()
         self.n_villages = len(self.villages)
         self.add_stat_info()
         # self.print_village_overview()
@@ -357,6 +358,7 @@ class Travian(Keys, Mouse):
         else:
             self.press_tab()
         self.press_tab()
+        self.wait()
         for i in range(num):
             self.press_enter()
             self.wait(1)
@@ -369,29 +371,36 @@ class Travian(Keys, Mouse):
     # VILLAGE INFOS
     # region village infos
 
-    def acquire_village_names(self):
-        dic = OrderedDict()
+    def read_all_str(self):
+        """
+        fills self.villages and __link list with information from the copied travian overview
+        :return:
+        """
         all_str = self.get_copy_all_str()
         all_str = filter(lambda x: len(x) > 2, all_str)
-        for i, val1 in enumerate(all_str):
-            self.acquire_link_list(all_str, i, val1)
-            if val1.startswith('Villages'):
-                for j, val2 in enumerate(all_str[i + 1:]):
-                    if val2.startswith('Daily'):
-                        break
-                    if j % 2 == 0:
-                        dic[val2] = {}
-                        coods = ''
-                        for letter in all_str[i + 1:][j + 1]:
-                            try:
-                                letter.decode('utf-8')
-                                coods += letter
-                            except UnicodeDecodeError:
-                                pass
-                        dic[val2]['x'] = int(coods.strip('()').split('|')[0])
-                        dic[val2]['y'] = int(coods.strip('()').split('|')[1])
-                        dic[val2]['hero'] = False
-        return dic
+        for i, value in enumerate(all_str):
+            self.acquire_village_names(all_str, i, value)
+            self.acquire_link_list(all_str, i, value)
+
+    def acquire_village_names(self, lis, index, value):
+        if value.startswith('Villages'):
+            dic = OrderedDict()
+            for j, val2 in enumerate(lis[index + 1:]):
+                if val2.startswith('Daily'):
+                    break
+                if j % 2 == 0:
+                    dic[val2] = {}
+                    coods = ''
+                    for letter in lis[index + 1:][j + 1]:
+                        try:
+                            letter.decode('utf-8')
+                            coods += letter
+                        except UnicodeDecodeError:
+                            pass
+                    dic[val2]['x'] = int(coods.strip('()').split('|')[0])
+                    dic[val2]['y'] = int(coods.strip('()').split('|')[1])
+                    dic[val2]['hero'] = False
+            self.villages = dic
 
     def acquire_link_list(self, lis, index, value):
         if value.startswith('Link list'):
@@ -401,7 +410,6 @@ class Travian(Keys, Mouse):
                     break
                 count += 1
             self.__link_tabs = count
-            return count
 
     def get_all_troop_tabs(self, skip_empty=True):
         self.open_troops()
