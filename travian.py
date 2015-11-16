@@ -363,7 +363,6 @@ class Travian(Keys, Mouse):
             self.press_tab()
             self.wait()
 
-
     # endregion
 
     # ============================================
