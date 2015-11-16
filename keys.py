@@ -26,6 +26,10 @@ class Keys:
         for i in range(num):
             self.k.tap_key(self.k.down_key)
 
+    def press_up(self, num=1):
+        for i in range(num):
+            self.k.tap_key(self.k.up_key)
+
     def press_esc(self):
         self.k.tap_key(self.k.escape_key)
 
