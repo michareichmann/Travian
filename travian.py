@@ -17,6 +17,8 @@ import re
 # todo: check if merchants are enough
 # todo: use len of link list
 # todo: make fct read all_str and acquire names subfunction
+# todo: offer number of items on the market
+# todo: make composite subclasses for label etc or different frames? FRAMES!
 
 # ============================================
 # MAIN CLASS DEFINITION
@@ -33,7 +35,7 @@ class Travian(Keys, Mouse):
         self.configure_parser()
         self.args = self.parser.parse_args()
         # general stuff
-        self.__link_list = 0
+        self.__link_tabs = 0
         self.wait_time = 1.5
         self.a = 0.1
         # village
@@ -317,6 +319,51 @@ class Travian(Keys, Mouse):
     def send_crop(self, vil1, vil2, crop, go_twice=False):
         self.send_merchant(vil1, vil2, crop=crop, go_twice=go_twice)
 
+    def market_offer(self, vil, res1, res2, quant1, quant2, num=1, max_transport=True, max_time=4, own_ally=False):
+        vil_num = self.villages.keys().index(vil) + 1
+        ress1 = {'Lumber': 0, 'Clay': 1, 'Iron': 2, 'Crop': 3}
+        ress2 = {'Lumber': -1, 'Clay': 0, 'Iron': 1, 'Crop': 2}
+        self.change_village(vil_num)
+        self.open_market()
+        self.press_tab(40 + self.get_link_tabs())
+        self.wait()
+        self.press_enter()
+        self.wait(self.wait_time)
+        self.press_tab()
+        self.send_text(quant1)
+        # self.wait()
+        self.press_tab()
+        # self.wait()
+        self.press_down(ress1[res1])
+        self.press_tab()
+        self.send_text(quant2)
+        # self.wait()
+        self.press_tab()
+        if ress2[res2] == -1:
+            self.press_up()
+        else:
+            self.press_down(ress2[res2])
+        if max_transport:
+            self.press_tab()
+            # self.wait()
+            self.press_space()
+            self.press_tab()
+            self.send_text(max_time)
+        else:
+            self.press_tab(2)
+        if own_ally:
+            self.press_tab()
+            self.press_space()
+        else:
+            self.press_tab()
+        self.press_tab()
+        for i in range(num):
+            self.press_enter()
+            self.wait(1)
+            self.press_tab()
+            self.wait()
+
+
     # endregion
 
     # ============================================
@@ -354,7 +401,7 @@ class Travian(Keys, Mouse):
                 if val.startswith('Warehouse'):
                     break
                 count += 1
-            self.__link_list = count
+            self.__link_tabs = count
             return count
 
     def get_all_troop_tabs(self, skip_empty=True):
@@ -525,13 +572,13 @@ class Travian(Keys, Mouse):
 
     # ============================================
     # SET
-    def set_link_list(self, value):
-        self.__link_list = value
+    def set_link_tabs(self, value):
+        self.__link_tabs = value
 
     # ============================================
     # GET
-    def get_link_list(self):
-        return self.__link_list
+    def get_link_tabs(self):
+        return self.__link_tabs
 
     @staticmethod
     def wait(sec=0.1):
