@@ -19,6 +19,7 @@ import re
 # todo: make fct read all_str and acquire names subfunction
 # todo: offer number of items on the market
 # todo: make composite subclasses for label etc or different frames? FRAMES!
+# todo: make function that for raid timing
 
 # ============================================
 # MAIN CLASS DEFINITION
@@ -37,6 +38,7 @@ class Travian(Keys, Mouse):
         # general stuff
         self.__link_tabs = 0
         self.wait_time = 1.5
+        self.raid_wait = 1.5
         self.a = 0.1
         # village
         self.villages = None
@@ -162,13 +164,13 @@ class Travian(Keys, Mouse):
             self.change_village(village)
         # open tabs and wait
         self.open_troops(left_raids)
-        self.wait(left_raids * 0.6)
+        self.wait(left_raids * self.raid_wait)
         # fill in raid info
         for raid in reversed(send_raids):
             self.send_raid(village, infos['x'][raid], infos['y'][raid], infos['unit'][raid], infos['quantity'][raid], False)
             self.wait(0.5)
         # confirm and close tabs
-        self.wait(.4 * n_raids)
+        self.wait(.6 * n_raids)
         for i in range(left_raids):
             self.press_tab(43)
             self.press_enter()
@@ -608,4 +610,3 @@ if __name__ == '__main__':
     root = Tk()
     root.withdraw()
     t = Travian(root)
-    # x.run()
