@@ -13,5 +13,5 @@ class Gui:
     def __init__(self):
         # gui
         self.dummy = Label()
-        self.button_size = 15
+        self.button_size = 12
         self.pics_path = 'pics/'
