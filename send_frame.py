@@ -18,8 +18,8 @@ class Send(Gui):
         # tk
         self.root = root
         self.travian = travian
-        # frame
-        self.frame = Frame(self.root, bd=5, relief=GROOVE)
+        # frames
+        self.frame = Frame(self.root)
         # items
         self.images = self.create_images()
         self.stringvars = self.create_stringvars()
@@ -59,8 +59,8 @@ class Send(Gui):
         dic = OrderedDict()
         dic['main'] = Label(self.frame, text='Send Merchants', font='font/Font 12 bold')
         dic['ress'] = self.create_ress_labels()
-        dic['vil1'] = Label(self.frame, text='Village 1')
-        dic['vil2'] = Label(self.frame, text='Village 2')
+        dic['vil1'] = Label(self.frame, text='From:')
+        dic['vil2'] = Label(self.frame, text='To:')
         return dic
 
     def create_ress_labels(self):
@@ -104,20 +104,27 @@ class Send(Gui):
 
     # ============================================
     # PACKING
-    def make_gui(self):
-        self.frame.pack()
+    def make_gui(self, parent_frame):
+        self.frame.pack(in_= parent_frame)
         row = 0
-        self.labels['main'].grid(columnspan=3, pady=5)
+        self.labels['main'].grid(pady=5, columnspan=2)
         for row, key in enumerate(self.images.keys(), 1):
             self.labels['ress'][key].grid(row=row)
             self.spin_boxes['ress'][key].grid(row=row, column=1)
-        self.buttons['clear'].grid(row=row + 1, columnspan=2, pady=2)
+        self.labels['vil1'].grid(row=row + 1)
+        self.opt_menus['vil1'].grid(row=row + 1, column=1)
+        self.labels['vil2'].grid(row=row + 2)
+        self.opt_menus['vil2'].grid(row=row + 2, column=1)
+        self.buttons['clear'].grid(row=row + 3, columnspan=2, pady=2)
+        self.buttons['merchant'].grid(row=row + 4, columnspan=2, pady=2)
 
 if __name__ == '__main__':
     root = Tk()
+    frame = Frame(root, bd=5, relief=GROOVE)
+    frame.pack()
     travian = Travian(root)
     t = Send(root, travian)
-    t.make_gui()
+    t.make_gui(frame)
     t.root.mainloop()
 
 
