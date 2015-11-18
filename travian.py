@@ -15,8 +15,8 @@ import re
 
 
 # todo: check if merchants are enough
-# todo: use len of link list
 # todo: make function that for raid timing
+# todo: check favourite market tab
 
 # ============================================
 # MAIN CLASS DEFINITION
@@ -37,6 +37,7 @@ class Travian(Keys, Mouse):
         self.wait_time = 1.5
         self.raid_wait = 1.5
         self.a = 0.1
+        self.is_sitter = False
         # village
         self.villages = None
         self.read_all_str()
@@ -53,8 +54,7 @@ class Travian(Keys, Mouse):
         pass
 
     # ============================================
-    # OPEN WINDOWS IN TRAVIAN
-    # region open windows
+    # region OPEN WINDOWS IN TRAVIAN
     def open_troops(self, num=0):
         self.goto_init()
         self.wait()
@@ -131,8 +131,7 @@ class Travian(Keys, Mouse):
     # endregion
 
     # ============================================
-    # RAIDING
-    # region raiding
+    # region RAIDING
 
     def send_all_raids(self):
         self.get_all_troop_tabs()
@@ -168,8 +167,9 @@ class Travian(Keys, Mouse):
             self.wait(0.5)
         # confirm and close tabs
         self.wait(.6 * n_raids)
+        link_tabs = self.get_link_tabs()
         for i in range(left_raids):
-            self.press_tab(43)
+            self.press_tab(38 + link_tabs)
             self.press_enter()
             self.wait(self.a)
             self.press_ctrl_w()
@@ -224,7 +224,8 @@ class Travian(Keys, Mouse):
         n_tabs = self.villages.values()[vil_num - 1]['troop tabs'][unit_num]
         all_tabs = self.villages.values()[vil_num - 1]['troop tabs'][-1] + 1
         all_tabs += 2 if self.villages.values()[vil_num - 1]['hero'] else 0
-        self.press_tab(41 + n_tabs)
+        link_tabs = self.get_link_tabs()
+        self.press_tab(36 + link_tabs + n_tabs)
         self.send_text(quantity)
         self.press_tab(all_tabs - n_tabs)
         self.send_text(x)
@@ -237,7 +238,7 @@ class Travian(Keys, Mouse):
         self.press_enter()
         if single:
             self.wait(1)
-            self.press_tab(43)
+            self.press_tab(38 + link_tabs)
             self.press_enter()
 
     def get_raid_info(self):
@@ -274,8 +275,7 @@ class Travian(Keys, Mouse):
     # endregion
 
     # ============================================
-    # MARKETPLACE
-    # region market
+    # region MARKETPLACE
 
     def send_merchant(self, vil1, vil2, lum=0, clay=0, iron=0, crop=0, go_twice=False):
         vil1 = self.villages.keys().index(vil1) + 1
@@ -304,7 +304,8 @@ class Travian(Keys, Mouse):
             self.wait()
         self.press_enter()
         self.wait(1)
-        self.press_tab(55)
+        link_tabs = self.get_link_tabs()
+        self.press_tab(50 + link_tabs)
         self.press_enter()
 
     def send_iron(self, vil1, vil2, iron, go_twice=False):
@@ -365,8 +366,7 @@ class Travian(Keys, Mouse):
     # endregion
 
     # ============================================
-    # VILLAGE INFOS
-    # region village infos
+    # region VILLAGE INFOS
 
     def read_all_str(self):
         """
@@ -552,8 +552,7 @@ class Travian(Keys, Mouse):
     # endregion
 
     # ============================================
-    # MISCELLANEOUS
-    # region miscellaneous
+    # region MISCELLANEOUS
 
     def get_copy_all_str(self):
         self.goto_init()
@@ -572,6 +571,16 @@ class Travian(Keys, Mouse):
         self.parser.add_argument("hero_village", nargs='?', default="2", help="enter the hero village", type=int)
         self.parser.add_argument("-tt", "--troop_tabs", action="store_true", help="acquire troop tabs from travian")
 
+    def sitter_mode(self, status):
+        link_tabs = self.get_link_tabs()
+        if status and not self.is_sitter and link_tabs > 0:
+            self.set_link_tabs(link_tabs - 1)
+            self.is_sitter = True
+        if not status and self.is_sitter:
+            self.set_link_tabs(link_tabs + 1)
+            self.is_sitter = False
+        print 'link tabs:', self.get_link_tabs()
+        return self.is_sitter
     # endregion
 
     # ============================================

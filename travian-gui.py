@@ -31,8 +31,10 @@ class Gui:
         # frames
         self.exit_frame = Frame(self.root, bd=5, relief=GROOVE)
         # items
+        self.intvars = self.create_intvars()
         # widgets
         self.buttons = self.create_buttons()
+        self.checkboxes = self.create_checkboxes()
         # configure gui
         self.config_root()
         self.make_market_frame()
@@ -40,12 +42,24 @@ class Gui:
         self.make_info_frame()
         self.make_exit_frame()
 
+    #
+    @staticmethod
+    def create_intvars():
+        dic = OrderedDict()
+        dic['sitter'] = IntVar()
+        return dic
+
     # ============================================
     # region WIDGETS
     def create_buttons(self):
         dic = OrderedDict()
         dic['restart'] = Button(self.exit_frame, text='Restart', width=self.info.button_size, command=self.restart)
         dic['quit'] = Button(self.exit_frame, text='Exit', width=self.info.button_size, command=self.root.destroy)
+        return dic
+
+    def create_checkboxes(self):
+        dic = OrderedDict()
+        dic['sitter'] = Checkbutton(self.exit_frame, text='sitter', variable=self.intvars['sitter'], command=self.set_sitter)
         return dic
 
     # ============================================
@@ -58,11 +72,14 @@ class Gui:
         self.root.destroy()
         python = executable
         execl(python, python, *argv)
+
+    def set_sitter(self):
+        is_sitter = bool(self.intvars['sitter'].get())
+        return self.travian.sitter_mode(is_sitter)
     #  endregion
 
     # ============================================
     # region FRAMES AND PACKING
-
     def make_market_frame(self):
         self.market.frame.grid()
         self.market.make_gui()
@@ -80,8 +97,10 @@ class Gui:
         self.exit_frame.grid(row=2, columnspan=2, sticky='NEWS')
         self.exit_frame.grid_columnconfigure(0, weight=1)
         self.exit_frame.grid_columnconfigure(1, weight=1)
-        self.buttons['restart'].grid(row=0, pady=6)
-        self.buttons['quit'].grid(row=0, column=1)
+        self.exit_frame.grid_columnconfigure(2, weight=1)
+        self.checkboxes['sitter'].grid(row=0)
+        self.buttons['restart'].grid(row=0, column=1, pady=6)
+        self.buttons['quit'].grid(row=0, column=2)
     # endregion
 
     def do_nothing(self):
