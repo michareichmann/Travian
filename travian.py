@@ -16,8 +16,6 @@ import re
 
 # todo: check if merchants are enough
 # todo: use len of link list
-# todo: make fct read all_str and acquire names subfunction
-# todo: make composite subclasses for label etc or different frames? FRAMES!
 # todo: make function that for raid timing
 
 # ============================================

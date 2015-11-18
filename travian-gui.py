@@ -14,11 +14,6 @@ from os import execl
 from sys import executable, argv
 # from mail import Mail
 
-# ============================================
-# CONSTANTS
-# ============================================
-button_size = 12
-
 
 # ============================================
 # CLASS DEFINITION
@@ -34,7 +29,7 @@ class Gui:
         self.info = Info(self.root, self.travian)
         # self.mail = Mail()
         # frames
-        self.main_frame = Frame(self.root)
+        self.exit_frame = Frame(self.root, bd=5, relief=GROOVE)
         # items
         # widgets
         self.buttons = self.create_buttons()
@@ -43,13 +38,14 @@ class Gui:
         self.make_market_frame()
         self.make_raid_frame()
         self.make_info_frame()
+        self.make_exit_frame()
 
     # ============================================
     # region WIDGETS
     def create_buttons(self):
         dic = OrderedDict()
-        dic['restart'] = Button(self.raiding.frame, text='Restart', width=button_size, command=self.restart)
-        dic['quit'] = Button(self.raiding.frame, text='Exit', width=button_size, command=self.root.destroy)
+        dic['restart'] = Button(self.exit_frame, text='Restart', width=self.info.button_size, command=self.restart)
+        dic['quit'] = Button(self.exit_frame, text='Exit', width=self.info.button_size, command=self.root.destroy)
         return dic
 
     # ============================================
@@ -79,6 +75,13 @@ class Gui:
     def make_info_frame(self):
         self.info.frame.grid(row=1, columnspan=2, sticky='NEWS')
         self.info.make_gui()
+
+    def make_exit_frame(self):
+        self.exit_frame.grid(row=2, columnspan=2, sticky='NEWS')
+        self.exit_frame.grid_columnconfigure(0, weight=1)
+        self.exit_frame.grid_columnconfigure(1, weight=1)
+        self.buttons['restart'].grid(row=0, pady=6)
+        self.buttons['quit'].grid(row=0, column=1)
     # endregion
 
     def do_nothing(self):
