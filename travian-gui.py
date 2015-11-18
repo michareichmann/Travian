@@ -29,7 +29,7 @@ class Gui:
         self.root = Tk()
         # compositions
         self.travian = Travian(self.root)
-        self.market = Market(self.root)
+        self.market = Market(self.root, self.travian)
         self.market_frame = self.market.frame
         # self.mail = Mail()
         # frames

@@ -334,21 +334,19 @@ class Travian(Keys, Mouse):
         self.wait(self.wait_time)
         self.press_tab()
         self.send_text(quant1)
-        # self.wait()
         self.press_tab()
-        # self.wait()
+        self.wait()
         self.press_down(ress1[res1])
         self.press_tab()
         self.send_text(quant2)
-        # self.wait()
         self.press_tab()
+        self.wait()
         if ress2[res2] == -1:
             self.press_up()
         else:
             self.press_down(ress2[res2])
         if max_transport:
             self.press_tab()
-            # self.wait()
             self.press_space()
             self.press_tab()
             self.send_text(max_time)
@@ -361,11 +359,11 @@ class Travian(Keys, Mouse):
             self.press_tab()
         self.press_tab()
         self.wait()
-        for i in range(num):
-            self.press_enter()
-            self.wait(1)
-            self.press_tab()
-            self.wait()
+        # for i in range(num):
+        #     self.press_enter()
+        #     self.wait(1)
+        #     self.press_tab()
+        #     self.wait()
 
     # endregion
 

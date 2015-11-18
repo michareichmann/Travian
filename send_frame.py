@@ -13,11 +13,11 @@ from travian import Travian
 # CLASS DEFINITION
 # ============================================
 class Send(Gui):
-    def __init__(self, root, travian):
+    def __init__(self, send_root, send_travian):
         Gui.__init__(self)
         # tk
-        self.root = root
-        self.travian = travian
+        self.root = send_root
+        self.travian = send_travian
         # frames
         self.frame = Frame(self.root)
         # items
@@ -49,6 +49,7 @@ class Send(Gui):
     # ============================================
     # WIDGETS
     def create_buttons(self):
+        # todo go twice button
         dic = OrderedDict()
         dic['market'] = Button(self.frame, text='Market', width=self.button_size, command=self.open_market)
         dic['merchant'] = Button(self.frame, text='Send Merchant', width=self.button_size, command=self.send_merchant)
@@ -104,8 +105,8 @@ class Send(Gui):
 
     # ============================================
     # PACKING
-    def make_gui(self, parent_frame):
-        self.frame.pack(in_= parent_frame)
+    def make_gui(self):
+        # self.frame.pack(in_=parent_frame)
         row = 0
         self.labels['main'].grid(pady=5, columnspan=2)
         for row, key in enumerate(self.images.keys(), 1):
@@ -118,15 +119,12 @@ class Send(Gui):
         self.buttons['clear'].grid(row=row + 3, columnspan=2, pady=2)
         self.buttons['merchant'].grid(row=row + 4, columnspan=2, pady=2)
 
+
 if __name__ == '__main__':
-    root = Tk()
-    frame = Frame(root, bd=5, relief=GROOVE)
+    this_root = Tk()
+    frame = Frame(this_root, bd=5, relief=GROOVE)
     frame.pack()
-    travian = Travian(root)
-    t = Send(root, travian)
-    t.make_gui(frame)
+    travian = Travian(this_root)
+    t = Send(this_root, travian)
+    t.make_gui()
     t.root.mainloop()
-
-
-
-
