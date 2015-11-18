@@ -15,3 +15,7 @@ class Gui:
         self.dummy = Label()
         self.button_size = 12
         self.pics_path = 'pics/'
+
+    def create_margin(self, frame):
+        label = Label(frame, text=' ', font='font/Font 5')
+        return label

@@ -17,7 +17,6 @@ import re
 # todo: check if merchants are enough
 # todo: use len of link list
 # todo: make fct read all_str and acquire names subfunction
-# todo: offer number of items on the market
 # todo: make composite subclasses for label etc or different frames? FRAMES!
 # todo: make function that for raid timing
 
@@ -359,11 +358,11 @@ class Travian(Keys, Mouse):
             self.press_tab()
         self.press_tab()
         self.wait()
-        # for i in range(num):
-        #     self.press_enter()
-        #     self.wait(1)
-        #     self.press_tab()
-        #     self.wait()
+        for i in range(num):
+            self.press_enter()
+            self.wait(1)
+            self.press_tab()
+            self.wait()
 
     # endregion
 

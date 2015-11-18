@@ -24,11 +24,16 @@ class Market(Gui):
         # subframes
         self.send = Send(mark_root, mark_travian)
         self.offer = Offer(mark_root, mark_travian)
+        # widgets
+        self.label = Label(self.frame, text='Marketplace', font='font/Font 16 bold')
+        self.margin = self.create_margin(self.frame)
 
     def make_gui(self):
-        self.send.frame.pack(in_=self.frame, side=LEFT)
+        self.label.grid(columnspan=3)
+        self.send.frame.grid(in_=self.frame, row=1)
         self.send.make_gui()
-        self.offer.frame.pack(in_=self.frame, side=LEFT, anchor=CENTER)
+        self.margin.grid(row=1, column=1)
+        self.offer.frame.grid(in_=self.frame, row=1, column=2, sticky='NEWS')
         self.offer.make_gui()
 
 
