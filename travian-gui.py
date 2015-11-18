@@ -8,6 +8,7 @@ from Tkinter import *
 from collections import OrderedDict
 from travian import Travian
 from market import Market
+from raid_frame import Raiding
 from os import execl
 from sys import executable, argv
 # from mail import Mail
@@ -28,23 +29,21 @@ class Gui:
         # compositions
         self.travian = Travian(self.root)
         self.market = Market(self.root, self.travian)
+        self.raiding = Raiding(self.root, self.travian)
         # self.mail = Mail()
         # frames
         self.main_frame = Frame(self.root)
-        self.raid_frame = Frame(self.root, bd=5, relief=GROOVE)
         self.info_frame = Frame(self.root, bd=5, relief=GROOVE)
         # gui items
         # variables
         self.info_vars = self.create_info_vars()
         # pics
         # labels
-        self.raid_labels = self.create_raid_labels()
         self.info_labels = self.create_info_labels()
         # spin boxes
         self.info_spin_boxes = self.create_info_spinboxes()
         # option menus
         # buttons
-        self.raid_buttons = self.create_raid_buttons()
         self.info_buttons = self.create_info_buttons()
         self.buttons = self.create_buttons()
         # bools
@@ -62,8 +61,8 @@ class Gui:
     # region object creation
     def create_buttons(self):
         dic = OrderedDict()
-        dic['restart'] = Button(self.raid_frame, text='Restart', width=button_size, command=self.restart)
-        dic['quit'] = Button(self.raid_frame, text='Exit', width=button_size, command=self.root.destroy)
+        dic['restart'] = Button(self.raiding.frame, text='Restart', width=button_size, command=self.restart)
+        dic['quit'] = Button(self.raiding.frame, text='Exit', width=button_size, command=self.root.destroy)
         return dic
 
     # def create_market_buttons(self):
@@ -76,11 +75,11 @@ class Gui:
     #     dic['clear'] = Button(self.market_frame, text='Clear', width=15, command=self.clear)
     #     dic['offer'] = Button(self.market_frame, text='Make Offer', width=10, command=self.make_offer)
     #     return dic
-
-    def create_raid_buttons(self):
-        dic = OrderedDict()
-        dic['all raids'] = Button(self.raid_frame, text='All Raids', width=button_size, command=self.travian.send_all_raids)
-        return dic
+    #
+    # def create_raid_buttons(self):
+    #     dic = OrderedDict()
+    #     dic['all raids'] = Button(self.raid_frame, text='All Raids', width=button_size, command=self.travian.send_all_raids)
+    #     return dic
 
     def create_info_buttons(self):
         dic = OrderedDict()
@@ -132,11 +131,11 @@ class Gui:
     #     dic['bot'] = Label(self.market_frame, text=' ', font='font/Font 5')
     #     return dic
 
-    def create_raid_labels(self):
-        dic = OrderedDict()
-        dic['main'] = Label(self.raid_frame, text='Raid Manager', font='font/Font 16 bold')
-        dic['bot'] = Label(self.raid_frame, text=' ', font='font/Font 5')
-        return dic
+    # def create_raid_labels(self):
+    #     dic = OrderedDict()
+    #     dic['main'] = Label(self.raid_frame, text='Raid Manager', font='font/Font 16 bold')
+    #     dic['bot'] = Label(self.raid_frame, text=' ', font='font/Font 5')
+    #     return dic
 
     def create_info_labels(self):
         dic = OrderedDict()
@@ -294,13 +293,17 @@ class Gui:
         self.market.make_gui()
 
     def make_raid_frame(self):
-        self.raid_frame.grid(row=0, column=1, sticky=N + E + W + S)
-        self.raid_frame.grid_rowconfigure(1, weight=1)
-        self.raid_labels['main'].grid(padx=20, pady=10)
-        self.raid_buttons['all raids'].grid(row=1)
-        self.buttons['restart'].grid(row=2, sticky=S)
-        self.buttons['quit'].grid(row=3, sticky=S)
-        self.raid_labels['bot'].grid(row=4)
+        self.raiding.frame.grid(row=0, column=1, sticky='NEWS')
+        self.raiding.frame.grid_rowconfigure(1, weight=1)
+        self.raiding.make_gui()
+
+        # self.raid_frame.grid(row=0, column=1, sticky=N + E + W + S)
+        # self.raid_frame.grid_rowconfigure(1, weight=1)
+        # self.raid_labels['main'].grid(padx=20, pady=10)
+        # self.raid_buttons['all raids'].grid(row=1)
+        # self.buttons['restart'].grid(row=2, sticky=S)
+        # self.buttons['quit'].grid(row=3, sticky=S)
+        # self.raid_labels['bot'].grid(row=4)
 
     def make_info_frame(self):
         self.info_frame.grid(row=1, columnspan=2, sticky='NEWS')
