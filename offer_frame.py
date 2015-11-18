@@ -13,11 +13,11 @@ from travian import Travian
 # CLASS DEFINITION
 # ============================================
 class Offer(Gui):
-    def __init__(self, offer_root, offer_travian):
+    def __init__(self, gui, app):
         Gui.__init__(self)
         # tk
-        self.root = offer_root
-        self.travian = offer_travian
+        self.root = gui
+        self.travian = app
         # frames
         self.frame = Frame(self.root)
         # items

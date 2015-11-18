@@ -13,11 +13,11 @@ from travian import Travian
 # CLASS DEFINITION
 # ============================================
 class Send(Gui):
-    def __init__(self, send_root, send_travian):
+    def __init__(self, gui, app):
         Gui.__init__(self)
         # tk
-        self.root = send_root
-        self.travian = send_travian
+        self.root = gui
+        self.travian = app
         # frames
         self.frame = Frame(self.root)
         # items
