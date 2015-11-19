@@ -15,7 +15,6 @@ import re
 
 
 # todo: check if merchants are enough
-# todo: check favourite market tab
 
 # ============================================
 # MAIN CLASS DEFINITION
@@ -33,6 +32,7 @@ class Travian(Keys, Mouse):
         self.args = self.parser.parse_args()
         # general stuff
         self.__link_tabs = 0
+        self.link_list = None
         self.wait_time = 1.5
         self.raid_wait = 0.45
         self.a = 0.1
@@ -112,6 +112,19 @@ class Travian(Keys, Mouse):
         self.press_enter()
         self.single_mode(single, pos)
 
+    def open_offer(self):
+        self.goto_init()
+        self.wait()
+        if 'offer' in self.link_list:
+            link_tab_nr = self.link_list.index('offer')
+            self.press_tab(24 + link_tab_nr)
+        else:
+            self.open_market()
+            self.press_tab(40 + self.get_link_tabs())
+        self.wait()
+        self.press_enter()
+        self.wait(self.wait_time)
+
     def change_village(self, num, single=False):
         """
         Change Village
@@ -170,6 +183,7 @@ class Travian(Keys, Mouse):
         self.wait(left_raids * self.raid_wait + 2)
         # fill in raid info
         for raid in reversed(send_raids):
+            self.wait()
             self.send_raid(village, infos['x'][raid], infos['y'][raid], infos['unit'][raid], infos['quantity'][raid], False)
             self.wait(0.5)
         # confirm and close tabs
@@ -332,11 +346,7 @@ class Travian(Keys, Mouse):
         ress1 = {'Lumber': 0, 'Clay': 1, 'Iron': 2, 'Crop': 3}
         ress2 = {'Lumber': -1, 'Clay': 0, 'Iron': 1, 'Crop': 2}
         self.change_village(vil_num)
-        self.open_market()
-        self.press_tab(40 + self.get_link_tabs())
-        self.wait()
-        self.press_enter()
-        self.wait(self.wait_time)
+        self.open_offer()
         self.press_tab()
         self.send_text(quant1)
         self.press_tab()
@@ -408,12 +418,15 @@ class Travian(Keys, Mouse):
 
     def acquire_link_list(self, lis, index, value):
         if value.startswith('Link list'):
+            link_list = []
             count = 0
             for val in lis[index + 1:]:
                 if val.startswith('Warehouse'):
                     break
+                link_list.append(val.lower())
                 count += 1
             self.__link_tabs = count
+            self.link_list = link_list
 
     def get_all_troop_tabs(self, skip_empty=True):
         self.open_troops()
