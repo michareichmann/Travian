@@ -15,6 +15,9 @@ import re
 
 
 # todo: check if merchants are enough
+# todo: print text field
+# todo: add carry information to spin box
+# todo: check go twice
 
 # ============================================
 # MAIN CLASS DEFINITION
@@ -299,12 +302,16 @@ class Travian(Keys, Mouse):
     # region MARKETPLACE
 
     def send_merchant(self, vil1, vil2, lum=0, clay=0, iron=0, crop=0, go_twice=False):
+        quantity = clay + lum + iron + crop
         vil1 = self.villages.keys().index(vil1) + 1
         # for i, arg in enumerate(sorted(locals().values())):
         #     if i > 1:
         #         assert type(arg) is int, '{arg} has to be of type int'.format(arg=arg)
         self.change_village(vil1)
         self.open_market()
+        if not self.enough_merchants(quantity):
+            return
+        self.press_tab()
         self.send_text(lum)
         self.wait()
         self.press_tab()
@@ -342,11 +349,14 @@ class Travian(Keys, Mouse):
         self.send_merchant(vil1, vil2, crop=crop, go_twice=go_twice)
 
     def market_offer(self, vil, res1, res2, quant1, quant2, num=1, max_transport=True, max_time=4, own_ally=False):
+
         vil_num = self.villages.keys().index(vil) + 1
         ress1 = {'Lumber': 0, 'Clay': 1, 'Iron': 2, 'Crop': 3}
         ress2 = {'Lumber': -1, 'Clay': 0, 'Iron': 1, 'Crop': 2}
         self.change_village(vil_num)
         self.open_offer()
+        if not self.enough_merchants(int(quant1), int(num)):
+            return
         self.press_tab()
         self.send_text(quant1)
         self.press_tab()
@@ -380,6 +390,32 @@ class Travian(Keys, Mouse):
             self.press_tab()
             self.wait()
 
+    def enough_merchants(self, quant, num=1):
+        all_str = self.get_copy_all_str()
+        all_str = filter(lambda x: len(x) > 2, all_str)
+        n_merchants = 0
+        carry_volume = 0
+        for i, value in enumerate(all_str):
+            if value.startswith('Merchants'):
+                merchants = self.decode_utf8(value.split()[1]).split('/')
+                n_merchants = int(merchants[0])
+                for j, word in enumerate(all_str[i + 1].split()):
+                    if word.startswith('carry'):
+                        carry_volume = int(all_str[i + 1].split()[j + 1])
+                break
+        if not carry_volume:
+            carry_volume = 1000
+        # check if the division is without rest
+        if (quant / float(carry_volume)).is_integer():
+            required_merchants = (quant / carry_volume) * num
+        else:
+            required_merchants = (quant / carry_volume + 1) * num
+        print n_merchants, required_merchants
+        if required_merchants > n_merchants:
+            print 'You have not got enough merchants!'
+            return False
+        else:
+            return True
     # endregion
 
     # ============================================
@@ -404,13 +440,7 @@ class Travian(Keys, Mouse):
                     break
                 if j % 2 == 0:
                     dic[val2] = {}
-                    coods = ''
-                    for letter in lis[index + 1:][j + 1]:
-                        try:
-                            letter.decode('utf-8')
-                            coods += letter
-                        except UnicodeDecodeError:
-                            pass
+                    coods = self.decode_utf8(lis[index + 1:][j + 1])
                     dic[val2]['x'] = int(coods.strip('()').split('|')[0])
                     dic[val2]['y'] = int(coods.strip('()').split('|')[1])
                     dic[val2]['hero'] = False
@@ -628,6 +658,17 @@ class Travian(Keys, Mouse):
     @staticmethod
     def get_tabs(string):
         return '\t' * (2 - len(string) / 8)
+
+    @staticmethod
+    def decode_utf8(word):
+        coods = ''
+        for letter in word:
+            try:
+                letter.decode('utf-8')
+                coods += letter
+            except UnicodeDecodeError:
+                pass
+        return coods
 
 
 if __name__ == '__main__':
