@@ -21,6 +21,7 @@ class Info(Gui):
         # frame
         self.frame = Frame(self.root, bd=5, relief=GROOVE)
         # items
+        self.news = None
         self.stringvars = self.create_stringvars()
         # widgets
         self.labels = self.create_labels()

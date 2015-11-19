@@ -18,6 +18,8 @@ class Raiding(Gui):
         # tk
         self.root = gui
         self.travian = app
+        # items
+        self.news = None
         # frame
         self.frame = Frame(self.root, bd=5, relief=GROOVE)
         # widgets

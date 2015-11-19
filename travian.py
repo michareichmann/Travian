@@ -14,10 +14,7 @@ from collections import OrderedDict
 import re
 
 
-# todo: check if merchants are enough
 # todo: print text field
-# todo: add carry information to spin box
-# todo: check go twice
 
 # ============================================
 # MAIN CLASS DEFINITION
@@ -34,6 +31,7 @@ class Travian(Keys, Mouse):
         self.configure_parser()
         self.args = self.parser.parse_args()
         # general stuff
+        self.msg = 'Nothing'
         self.__link_tabs = 0
         self.link_list = None
         self.wait_time = 1.5
@@ -310,7 +308,7 @@ class Travian(Keys, Mouse):
         self.change_village(vil1)
         self.open_market()
         if not self.enough_merchants(quantity):
-            return
+            return self.msg
         self.press_tab()
         self.send_text(lum)
         self.wait()
@@ -328,13 +326,15 @@ class Travian(Keys, Mouse):
         self.wait()
         if go_twice:
             self.press_tab()
+            self.wait()
             self.press_space()
             self.wait()
-        self.press_enter()
-        self.wait(1)
-        link_tabs = self.get_link_tabs()
-        self.press_tab(50 + link_tabs)
-        self.press_enter()
+        # self.press_enter()
+        # self.wait(1)
+        # link_tabs = self.get_link_tabs()
+        # self.press_tab(50 + link_tabs)
+        # self.press_enter()
+        return 0
 
     def send_iron(self, vil1, vil2, iron, go_twice=False):
         self.send_merchant(vil1, vil2, iron=iron, go_twice=go_twice)
@@ -410,8 +410,9 @@ class Travian(Keys, Mouse):
             required_merchants = (quant / carry_volume) * num
         else:
             required_merchants = (quant / carry_volume + 1) * num
-        print n_merchants, required_merchants
         if required_merchants > n_merchants:
+            msg = 'You have not got enough merchants!'
+            self.msg = msg
             print 'You have not got enough merchants!'
             return False
         else:
@@ -558,8 +559,7 @@ class Travian(Keys, Mouse):
     # endregion
 
     # ============================================
-    # PRINT OVERVIEWS
-    # region overviews
+    # region PRINT OVERVIEWS
 
     def print_village_overview(self):
         for key, item in self.villages.iteritems():
@@ -631,6 +631,11 @@ class Travian(Keys, Mouse):
             self.is_sitter = False
         print 'link tabs:', self.get_link_tabs()
         return self.is_sitter
+
+    def open_previous_window(self):
+        self.wait()
+        self.press_alt_tab()
+        return
     # endregion
 
     # ============================================

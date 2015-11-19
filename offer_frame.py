@@ -21,6 +21,7 @@ class Offer(Gui):
         # frames
         self.frame = Frame(self.root)
         # items
+        self.news = None
         self.resources = ['Lumber', 'Clay', 'Iron', 'Crop']
         self.stringvars = self.create_stringvars()
         self.intvars = self.create_intvars()
@@ -41,6 +42,8 @@ class Offer(Gui):
         dic['res1'].set('Lumber')
         dic['res2'].set('Clay')
         dic['vil'].set(self.travian.villages.keys()[0])
+        dic['terminal'] = StringVar()
+        dic['terminal'].set('Message Box')
         return dic
 
     @staticmethod
@@ -126,9 +129,8 @@ class Offer(Gui):
 
 if __name__ == '__main__':
     this_root = Tk()
-    frame = Frame(this_root, bd=5, relief=GROOVE)
-    frame.pack()
     travian = Travian(this_root)
     t = Offer(this_root, travian)
+    t.frame.pack()
     t.make_gui()
     t.root.mainloop()

@@ -21,6 +21,7 @@ class Send(Gui):
         # frames
         self.frame = Frame(self.root)
         # items
+        self.news = None
         self.images = self.create_images()
         self.stringvars = self.create_stringvars()
         self.intvars = self.create_intvars()
@@ -109,7 +110,10 @@ class Send(Gui):
         for value in self.spin_boxes['ress'].values():
             ress.append(int(value.get()))
         go_twice = bool(self.intvars['go twice'].get())
-        self.travian.send_merchant(vil1, vil2, ress[0], ress[1], ress[2], ress[3], go_twice)
+        message = self.travian.send_merchant(vil1, vil2, ress[0], ress[1], ress[2], ress[3], go_twice)
+        if message:
+            self.news = message
+        self.travian.open_previous_window()
 
     def clear(self):
         for box in self.spin_boxes['ress'].values():
@@ -136,9 +140,8 @@ class Send(Gui):
 
 if __name__ == '__main__':
     this_root = Tk()
-    frame = Frame(this_root, bd=5, relief=GROOVE)
-    frame.pack()
     travian = Travian(this_root)
     t = Send(this_root, travian)
+    t.frame.pack()
     t.make_gui()
     t.root.mainloop()

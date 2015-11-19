@@ -3,7 +3,7 @@ __author__ = 'micha'
 # ============================================
 # IMPORTS
 # ============================================
-from Tkinter import Label
+from Tkinter import Label, StringVar
 
 
 # ============================================
