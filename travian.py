@@ -15,7 +15,6 @@ import re
 
 
 # todo: check if merchants are enough
-# todo: make function that for raid timing
 # todo: check favourite market tab
 
 # ============================================
@@ -35,7 +34,7 @@ class Travian(Keys, Mouse):
         # general stuff
         self.__link_tabs = 0
         self.wait_time = 1.5
-        self.raid_wait = 1.5
+        self.raid_wait = 0.45
         self.a = 0.1
         self.is_sitter = False
         # village
@@ -64,6 +63,13 @@ class Travian(Keys, Mouse):
         else:
             self.press_enter()
             self.wait(self.wait_time)
+
+    def close_tabs(self, num=1):
+        self.goto_init()
+        self.wait()
+        for i in range(num):
+            self.wait(self.a)
+            self.press_ctrl_w()
 
     def open_map(self):
         """
@@ -160,13 +166,14 @@ class Travian(Keys, Mouse):
             self.change_village(village)
         # open tabs and wait
         self.open_troops(left_raids)
-        self.wait(left_raids * self.raid_wait)
+        # linear behaviour of the tab open time
+        self.wait(left_raids * self.raid_wait + 2)
         # fill in raid info
         for raid in reversed(send_raids):
             self.send_raid(village, infos['x'][raid], infos['y'][raid], infos['unit'][raid], infos['quantity'][raid], False)
             self.wait(0.5)
         # confirm and close tabs
-        self.wait(.6 * n_raids)
+        self.wait(self.raid_wait * left_raids + 1)
         link_tabs = self.get_link_tabs()
         for i in range(left_raids):
             self.press_tab(38 + link_tabs)
