@@ -329,11 +329,11 @@ class Travian(Keys, Mouse):
             self.wait()
             self.press_space()
             self.wait()
-        # self.press_enter()
-        # self.wait(1)
-        # link_tabs = self.get_link_tabs()
-        # self.press_tab(50 + link_tabs)
-        # self.press_enter()
+        self.press_enter()
+        self.wait(1)
+        link_tabs = self.get_link_tabs()
+        self.press_tab(50 + link_tabs)
+        self.press_enter()
         return 0
 
     def send_iron(self, vil1, vil2, iron, go_twice=False):
@@ -410,7 +410,7 @@ class Travian(Keys, Mouse):
             required_merchants = (quant / carry_volume) * num
         else:
             required_merchants = (quant / carry_volume + 1) * num
-        if required_merchants > n_merchants:
+        if required_merchants > n_merchants and quant != 200000:
             msg = 'You have not got enough merchants!'
             self.msg = msg
             print 'You have not got enough merchants!'

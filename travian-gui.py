@@ -80,7 +80,7 @@ class TravianGui:
 
     def create_messages(self):
         dic = OrderedDict()
-        dic['terminal'] = Message(self.market.offer.frame, textvar=self.msg_var, bg='bisque3', font='times 12', relief=SUNKEN)
+        dic['terminal'] = Message(self.market.offer.frame, textvar=self.msg_var, bg='bisque3', font='times 12', relief=SUNKEN, aspect=300)
         return dic
 
     # ============================================

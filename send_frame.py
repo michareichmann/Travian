@@ -62,6 +62,7 @@ class Send(Gui):
         dic['market'] = Button(self.frame, text='Market', width=self.button_size, command=self.open_market)
         dic['merchant'] = Button(self.frame, text='Send Merchant', width=self.button_size, command=self.send_merchant)
         dic['clear'] = Button(self.frame, text='Clear', width=10, command=self.clear)
+        dic['all'] = Button(self.frame, text='All', width=10, command=self.send_all)
         return dic
 
     def create_labels(self):
@@ -120,6 +121,11 @@ class Send(Gui):
             box.delete(0, 'end')
             box.insert(0, 0)
 
+    def send_all(self):
+        for box in self.spin_boxes['ress'].values():
+            box.delete(0, 'end')
+            box.insert(0, 50000)
+
     # ============================================
     # PACKING
     def make_gui(self):
@@ -129,13 +135,14 @@ class Send(Gui):
         for row, key in enumerate(self.images.keys(), 1):
             self.labels['ress'][key].grid(row=row)
             self.spin_boxes['ress'][key].grid(row=row, column=1)
-        self.buttons['clear'].grid(row=row + 1, column=1, pady=2)
-        self.labels['vil1'].grid(row=row + 2)
-        self.opt_menus['vil1'].grid(row=row + 2, column=1)
-        self.labels['vil2'].grid(row=row + 3)
-        self.opt_menus['vil2'].grid(row=row + 3, column=1)
-        self.check_buttons['go twice'].grid(row=row + 4, columnspan=2)
-        self.buttons['merchant'].grid(row=row + 5, columnspan=2, pady=2)
+        self.buttons['all'].grid(row=row + 1, column=1, pady=2)
+        self.buttons['clear'].grid(row=row + 2, column=1, pady=2)
+        self.labels['vil1'].grid(row=row + 3)
+        self.opt_menus['vil1'].grid(row=row + 3, column=1)
+        self.labels['vil2'].grid(row=row + 4)
+        self.opt_menus['vil2'].grid(row=row + 4, column=1)
+        self.check_buttons['go twice'].grid(row=row + 5, columnspan=2)
+        self.buttons['merchant'].grid(row=row + 6, columnspan=2, pady=2)
 
 
 if __name__ == '__main__':
