@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-__author__ = 'micha'
-
 # ============================================
 # IMPORTS
 # ============================================
@@ -14,7 +12,9 @@ from collections import OrderedDict
 import re
 
 
+__author__ = 'micha'
 # todo: print text field
+
 
 # ============================================
 # MAIN CLASS DEFINITION
@@ -31,6 +31,7 @@ class Travian(Keys, Mouse):
         self.configure_parser()
         self.args = self.parser.parse_args()
         # general stuff
+        self.firefox = True
         self.msg = 'Nothing'
         self.__link_tabs = 0
         self.link_list = None
@@ -130,6 +131,7 @@ class Travian(Keys, Mouse):
         """
         Change Village
         :param num: name of the village
+        :param single: use function alone
         :return: village name
         """
         # num = self.villages.keys().index(vil) + 1
@@ -231,6 +233,7 @@ class Travian(Keys, Mouse):
         :param y: target coordinate y
         :param unit_name: unit string (first letters suffice)
         :param quantity: number of the raiding units
+        :param single: mode to use functions as standalone
         :return:
         """
         if single:
@@ -309,6 +312,9 @@ class Travian(Keys, Mouse):
         self.open_market()
         if not self.enough_merchants(quantity):
             return self.msg
+        if self.firefox:
+            self.press_tab()
+            self.press_shift_tab(8)
         self.press_tab()
         self.send_text(lum)
         self.wait()
@@ -332,6 +338,7 @@ class Travian(Keys, Mouse):
         self.press_enter()
         self.wait(1)
         link_tabs = self.get_link_tabs()
+        print link_tabs
         self.press_tab(50 + link_tabs)
         self.press_enter()
         return 0
@@ -440,11 +447,12 @@ class Travian(Keys, Mouse):
                 if val2.startswith('Daily'):
                     break
                 if j % 2 == 0:
-                    dic[val2] = {}
+                    vil = val2
+                    dic[vil] = {}
                     coods = self.decode_utf8(lis[index + 1:][j + 1])
-                    dic[val2]['x'] = int(coods.strip('()').split('|')[0])
-                    dic[val2]['y'] = int(coods.strip('()').split('|')[1])
-                    dic[val2]['hero'] = False
+                    dic[vil]['x'] = int(coods.strip(' ()').split('|')[0])
+                    dic[vil]['y'] = int(coods.strip(' ()').split('|')[1])
+                    dic[vil]['hero'] = False
             self.villages = dic
 
     def acquire_link_list(self, lis, index, value):
@@ -614,7 +622,9 @@ class Travian(Keys, Mouse):
         self.wait()
         self.goto_init()
         # return self.root.clipboard_get().encode('utf-8').split('\n')
-        return re.split('[\n\t]', self.root.clipboard_get().encode('utf-8'))
+        lst = re.split('[\n\t]', self.root.clipboard_get().encode('utf-8'))
+        all_str = [line.strip(' ') for line in lst]
+        return all_str
 
     def configure_parser(self):
         self.parser.add_argument("-H", "--hero", action="store_true", help="True if hero is in village")
