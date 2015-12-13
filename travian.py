@@ -188,6 +188,7 @@ class Travian(Keys, Mouse):
         for raid in reversed(send_raids):
             self.wait()
             self.send_raid(village, infos['x'][raid], infos['y'][raid], infos['unit'][raid], infos['quantity'][raid], False)
+            sleep(3)
             self.wait(0.5)
         # confirm and close tabs
         self.wait(self.raid_wait * left_raids + 1)
@@ -207,6 +208,10 @@ class Travian(Keys, Mouse):
         all_raids = len(infos['x'])
         send_raids = [] if send_raids is None else send_raids
         sent_troops = [0 * x for x in range(10)]
+        print 'infos', infos
+        print 'troops', troops
+        print 'sent_troops', sent_troops
+        print 'send raids', send_raids
         for raid in range(all_raids):
             if self.__check_raid(raid, sent_troops, infos, troops):
                 left_raids += 1
@@ -483,6 +488,7 @@ class Travian(Keys, Mouse):
         tab = 0
         self.change_village(vil_num)
         all_str = self.get_copy_all_str()
+        all_str = filter(lambda x: len(x) > 2, all_str)
         self.villages[vil]['troops'] = []
         for i, val1 in enumerate(all_str):
             if val1.startswith('Farm List'):
@@ -491,20 +497,32 @@ class Travian(Keys, Mouse):
                         break
                     elif val2.startswith('Hero'):
                         self.villages[vil]['hero'] = True
-                    if j % 2 == 0:
+                    if self.firefox:
                         if len(tabs) <= 10:
                             tabs.append(tab)
                         try:
-                            num = int(all_str[i + 1:][j + 1].strip(' /'))
+                            num = int(val2.split('/')[1])
                             self.villages[vil]['troops'].append(num)
                             tab += 2 if num else 1
                         except (IndexError, ValueError):
                             pass
+                    else:
+                        if j % 2 == 0:
+                            if len(tabs) <= 10:
+                                tabs.append(tab)
+                            try:
+                                num = int(all_str[i + 1:][j + 1].strip(' /'))
+                                self.villages[vil]['troops'].append(num)
+                                tab += 2 if num else 1
+                            except (IndexError, ValueError):
+                                pass
+        print 'tabs', tabs
         self.villages[vil]['troop tabs'] = tabs
 
     def acquire_troops_in_villages(self):
         self.open_stats()
         all_str = self.get_copy_all_str()
+        all_str = filter(lambda x: len(x) > 2, all_str)
         vil = 0
         for i, val1 in enumerate(all_str):
             if val1.startswith('Troops in villages'):
