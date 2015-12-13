@@ -156,30 +156,25 @@ class Travian(Keys, Mouse):
     # region RAIDING
 
     def send_all_raids(self):
-        self.get_all_troop_tabs()
+        # self.get_all_troop_tabs()
         for vil in range(1, self.n_villages + 1):
-            self.send_raids(vil, False)
+            self.send_raids(vil)
 
-    def send_raids(self, village=1, single=True):
+    def send_raids(self, village=1):
         assert len(str(village)) < 2, 'wrong village input'
         vil_name = self.villages.keys()[village - 1]
-        # get troop tabs
-        if single:
-            self.get_troop_tabs(vil_name)
-        # get infos
         infos = self.raid_info[vil_name]
-        # troops = self.villages.values()[village - 1]['troops']
         n_raids = len(infos['x'])
         if n_raids == 0:
-            print 'no raids in infofile for', self.raid_info.keys()[village - 1]
+            print 'no raids in infofile for', vil_name
             return
-        print 'send raids for', self.raid_info.keys()[village - 1]
+        print 'send raids for', vil_name
+        # goto the village
+        self.change_village(village)
+        self.get_troop_tabs(vil_name)
         # open tabs and check how many raids are possible
         send_raids = []
         left_raids = self.check_raids(village, send_raids)
-        # goto the village
-        if len(send_raids) > 0:
-            self.change_village(village)
         # open tabs and wait
         self.open_troops(left_raids)
         # linear behaviour of the tab open time
@@ -208,10 +203,6 @@ class Travian(Keys, Mouse):
         all_raids = len(infos['x'])
         send_raids = [] if send_raids is None else send_raids
         sent_troops = [0 * x for x in range(10)]
-        print 'infos', infos
-        print 'troops', troops
-        print 'sent_troops', sent_troops
-        print 'send raids', send_raids
         for raid in range(all_raids):
             if self.__check_raid(raid, sent_troops, infos, troops):
                 left_raids += 1
@@ -256,11 +247,16 @@ class Travian(Keys, Mouse):
         all_tabs += 2 if self.villages.values()[vil_num - 1]['hero'] else 0
         link_tabs = self.get_link_tabs()
         self.press_tab(36 + link_tabs + n_tabs)
+        self.wait()
         self.send_text(quantity)
+        self.wait()
         self.press_tab(all_tabs - n_tabs)
+        self.wait()
         self.send_text(x)
+        self.wait()
         self.press_tab()
         self.send_text(y)
+        self.wait()
         self.press_tab()
         # 1 for an attack
         self.press_down(2)
@@ -516,8 +512,10 @@ class Travian(Keys, Mouse):
                                 tab += 2 if num else 1
                             except (IndexError, ValueError):
                                 pass
-        print 'tabs', tabs
+        if self.firefox and not self.villages[vil]['hero']:
+            tabs.append(tab)
         self.villages[vil]['troop tabs'] = tabs
+        return tabs
 
     def acquire_troops_in_villages(self):
         self.open_stats()
@@ -677,7 +675,7 @@ class Travian(Keys, Mouse):
         return self.__link_tabs
 
     @staticmethod
-    def wait(sec=0.1):
+    def wait(sec=0.2):
         sleep(sec)
 
     @staticmethod
