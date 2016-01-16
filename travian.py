@@ -195,6 +195,16 @@ class Travian(Keys, Mouse):
             self.press_ctrl_w()
             self.wait()
 
+    def send_ready_tabs(self, n):
+        self.goto_init()
+        self.wait()
+        for i in xrange(n):
+            self.press_tab(38 + self.get_link_tabs())
+            self.press_enter()
+            self.wait(self.a)
+            self.press_ctrl_w()
+            self.wait()
+
     def check_raids(self, village, send_raids=None):
         village -= 1
         infos = self.raid_info.values()[village]
