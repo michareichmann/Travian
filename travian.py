@@ -195,17 +195,20 @@ class Travian(Keys, Mouse):
             self.press_ctrl_w()
             self.wait()
 
-    def send_ready_tabs(self, n, cata=True, all_cata=True):
+    def send_ready_tabs(self, n):
         self.goto_init()
-        self.wait()
-        tabs = [39] + [40] * (n - 1) if cata else [38] * n
-        tabs = [40] * n if all_cata else tabs
-        for i in xrange(n):
-            self.press_tab(tabs[i] + self.get_link_tabs())
+        self.press_tab(40 + self.get_link_tabs())
+        self.wait(.05)
+        self.press_enter()
+        self.wait(.05)
+        self.press_ctrl_w()
+        self.wait(.05)
+        # self.wait(0.5)
+        for i in xrange(n - 1):
             self.press_enter()
-            self.wait(self.a)
+            self.wait(.05)
             self.press_ctrl_w()
-            self.wait()
+            self.wait(.05)
 
     def check_raids(self, village, send_raids=None):
         village -= 1
