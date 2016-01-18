@@ -197,6 +197,7 @@ class Travian(Keys, Mouse):
 
     def send_ready_tabs(self, n):
         self.goto_init()
+        self.wait(1)
         self.press_tab(40 + self.get_link_tabs())
         self.wait(.05)
         self.press_enter()
