@@ -44,6 +44,7 @@ class Travian(Keys, Mouse):
         self.read_all_str()
         self.n_villages = len(self.villages)
         self.add_stat_info()
+        self.Production = self.init_production()
         # self.print_village_overview()
         # raids
         self.units = {0: 'Clubswinger', 1: 'Scout', 2: 'Ram', 3: 'Chief', 4: 'Spearman', 5: 'Paladin', 6: 'Catapult', 7: 'Settler', 8: 'Axeman', 9: 'Teutonic Knight', 10: 'Hero'}
@@ -53,6 +54,19 @@ class Travian(Keys, Mouse):
 
     def run(self):
         pass
+
+    def reset_production(self):
+        self.init_production(reset=True)
+
+    def init_production(self, reset=False):
+        dic = OrderedDict()
+        names = ['Lumber', 'Clay', 'Iron', 'Crop']
+        for name in names:
+            if reset:
+                self.Production[name] = 0
+            else:
+                dic[name] = 0
+        return dic
 
     # ============================================
     # region OPEN WINDOWS IN TRAVIAN
@@ -596,10 +610,54 @@ class Travian(Keys, Mouse):
             value['merchants'] = 0
             value['oasis attacks'] = 0
 
+    def acquire_resources(self):
+        self.open_overview()
+        self.wait(1)
+        for i, info in enumerate(self.villages.itervalues(), 1):
+            info['production'] = OrderedDict()
+            self.change_village(i)
+            all_text = filter(lambda x: len(x) > 2, self.get_copy_all_str())
+            for j, val1 in enumerate(all_text):
+                if val1.startswith('Production per hour'):
+                    for k, val2 in enumerate(all_text[j + 1:]):
+                        if k % 3 == 0:
+                            data = [all_text[j + 1:][l] for l in xrange(k, k + 3)]
+                            fac = 4 / 5. if len(data[0].split()) > 1 else 1
+                            try:
+                                info['production'][data[1].strip(':')] = int(fac * int(self.decode_utf8(data[2])))
+                            except ValueError:
+                                break
+
     # endregion
 
     # ============================================
     # region PRINT OVERVIEWS
+
+    def get_max_vilname_length(self):
+        lengths = [len(name) for name in self.villages]
+        return max(lengths)
+
+    def show_resources(self):
+        self.reset_production()
+        if 'production' not in self.villages.values()[0]:
+            self.acquire_resources()
+        l1 = self.get_max_vilname_length()
+        all_length = l1 + 2 + 4
+        print 'Village'.ljust(l1 + 2),
+        for res in self.villages.values()[0]['production']:
+            print res.rjust(len(res) + 2),
+            all_length += len(res) + 2
+        print
+        for key, item in self.villages.iteritems():
+            print key.ljust(l1 + 2),
+            for name, val in item['production'].iteritems():
+                self.Production[name] += val
+                print str(val).rjust(len(name) + 2),
+            print
+        print '-' * all_length
+        print ''.ljust(l1 + 2),
+        for name, val in self.Production.iteritems():
+            print str(val).rjust(len(name) + 2),
 
     def print_village_overview(self):
         for key, item in self.villages.iteritems():
